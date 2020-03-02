@@ -52,6 +52,7 @@ dependencies {
     compileOnly(project(":kotlin-scripting-compiler"))
     compileOnly(project(":kotlin-gradle-statistics"))
     embedded(project(":kotlin-gradle-statistics"))
+    implementation(project(":kotlin-gradle-build-metrics"))
 
     compile("com.google.code.gson:gson:${rootProject.extra["versions.jar.gson"]}")
     compile("de.undercouch:gradle-download-task:4.0.2")
