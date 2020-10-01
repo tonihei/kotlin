@@ -6,6 +6,8 @@
 package org.jetbrains.kotlin.idea.fir.low.level.api.sessions
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.fir.BuiltinTypes
 import org.jetbrains.kotlin.fir.PrivateSessionConstructor
 import org.jetbrains.kotlin.fir.SessionConfiguration
@@ -50,6 +52,7 @@ internal object FirIdeSessionFactory {
         builtinTypes: BuiltinTypes,
         sessionsCache: MutableMap<ModuleSourceInfo, FirIdeSourcesSession>,
         isRootModule: Boolean,
+        languageVersionSettings: LanguageVersionSettings = LanguageVersionSettingsImpl.DEFAULT,
     ): FirIdeSourcesSession {
         sessionsCache[moduleInfo]?.let { return it }
         val scopeProvider = KotlinScopeProvider(::wrapScopeWithJvmMapped)
@@ -65,7 +68,7 @@ internal object FirIdeSessionFactory {
             val cache = ModuleFileCacheImpl(this)
             val firPhaseManager = IdeFirPhaseManager(FirLazyDeclarationResolver(firFileBuilder), cache, sessionInvalidator)
 
-            registerCommonComponents()
+            registerCommonComponents(languageVersionSettings)
             registerResolveComponents()
             registerIdeComponents()
 
@@ -126,6 +129,7 @@ internal object FirIdeSessionFactory {
         project: Project,
         builtinsAndCloneableSession: FirIdeBuiltinsAndCloneableSession,
         builtinTypes: BuiltinTypes,
+        languageVersionSettings: LanguageVersionSettings = LanguageVersionSettingsImpl.DEFAULT,
     ): FirIdeLibrariesSession {
         checkCanceled()
         val searchScope = ModuleLibrariesSearchScope(moduleInfo.module)
@@ -137,7 +141,7 @@ internal object FirIdeSessionFactory {
 
         val kotlinClassFinder = VirtualFileFinderFactory.getInstance(project).create(searchScope)
         return FirIdeLibrariesSession(moduleInfo, project, searchScope, builtinTypes).apply {
-            registerCommonComponents()
+            registerCommonComponents(languageVersionSettings)
             registerJavaSpecificResolveComponents()
             registerIdeComponents()
 
@@ -170,9 +174,13 @@ internal object FirIdeSessionFactory {
         }
     }
 
-    fun createBuiltinsAndCloneableSession(project: Project, builtinTypes: BuiltinTypes): FirIdeBuiltinsAndCloneableSession {
+    fun createBuiltinsAndCloneableSession(
+        project: Project,
+        builtinTypes: BuiltinTypes,
+        languageVersionSettings: LanguageVersionSettings = LanguageVersionSettingsImpl.DEFAULT
+    ): FirIdeBuiltinsAndCloneableSession {
         return FirIdeBuiltinsAndCloneableSession(project, builtinTypes).apply {
-            registerCommonComponents()
+            registerCommonComponents(languageVersionSettings)
             registerIdeComponents()
 
             val kotlinScopeProvider = KotlinScopeProvider(::wrapScopeWithJvmMapped)
