@@ -10,6 +10,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     testImplementation(intellijDep()) {
+        // This dependency is needed only for FileComparisonFailure
         includeJars("idea_rt", rootProject = rootProject)
         isTransitive = false
     }
@@ -36,6 +37,8 @@ projectTest(parallel = true) {
     workingDir = rootDir
     jvmArgs!!.removeIf { it.contains("-Xmx") }
     maxHeapSize = "3g"
+
+    useJUnitPlatform()
 }
 
 testsJar()
