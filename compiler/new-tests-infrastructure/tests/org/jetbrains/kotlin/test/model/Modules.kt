@@ -6,14 +6,42 @@
 package org.jetbrains.kotlin.test.model
 
 import org.jetbrains.kotlin.platform.TargetPlatform
+import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import java.io.File
+
+data class TestModuleStructure(
+    val modules: List<TestModule>,
+    val globalDirectives: RegisteredDirectives
+) {
+    override fun toString(): String {
+        return buildString {
+            appendLine("Global directives:\n  $globalDirectives")
+            modules.forEach {
+                appendLine(it)
+                appendLine()
+            }
+        }
+    }
+}
 
 data class TestModule(
     val name: String,
     val targetPlatform: TargetPlatform,
     val files: List<TestFile>,
-    val dependencies: List<DependencyDescription>
-)
+    val dependencies: List<DependencyDescription>,
+    val directives: RegisteredDirectives
+) {
+    override fun toString(): String {
+        return buildString {
+            appendLine("Module: $name")
+            appendLine("targetPlatform = $targetPlatform")
+            appendLine("Dependencies:")
+            dependencies.forEach { appendLine("  $it") }
+            appendLine("Directives:\n  $directives")
+            files.forEach { appendLine(it) }
+        }
+    }
+}
 
 // TODO: maybe String or File will be more useful
 typealias FileContent = List<String>
@@ -22,7 +50,7 @@ data class TestFile(
     val name: String,
     val content: FileContent,
     val originalFile: File,
-    val startLineNumberInOriginalFile: Int
+    val startLineNumberInOriginalFile: Int // line count starts with 0
 )
 
 enum class DependencyRelation {
