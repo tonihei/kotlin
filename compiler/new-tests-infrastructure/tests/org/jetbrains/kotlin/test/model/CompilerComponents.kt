@@ -61,7 +61,7 @@ sealed class ResultingArtifact {
 }
 
 abstract class DependencyProvider<R : FrontendResults> {
-    abstract fun getSourceModule(Name: String): ResultingArtifact.Source<R>
+    abstract fun getSourceModule(name: String): ResultingArtifact.Source<R>
     abstract fun getCompiledKlib(name: String): ResultingArtifact.KLib
     abstract fun getBinaryDependency(name: String): ResultingArtifact.Binary
 }
