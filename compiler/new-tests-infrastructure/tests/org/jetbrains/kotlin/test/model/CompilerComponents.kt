@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 sealed class FrontendResults
 
 // FIR
-class FrontendIrResults(
+class FirFrontendResults(
     val session: FirSession,
     val firFiles: Map<TestFile, FirFile>
 ) : FrontendResults()
@@ -60,20 +60,26 @@ sealed class ResultingArtifact {
     }
 }
 
-abstract class DependencyProvider<R : FrontendResults> {
-    abstract fun getSourceModule(name: String): ResultingArtifact.Source<R>
-    abstract fun getCompiledKlib(name: String): ResultingArtifact.KLib
-    abstract fun getBinaryDependency(name: String): ResultingArtifact.Binary
+abstract class DependencyProvider<R : FrontendResults, out A : ResultingArtifact.Source<R>> {
+    abstract fun getTestModule(name: String): TestModule
+
+    abstract fun getSourceModule(name: String): A?
+    abstract fun getCompiledKlib(name: String): ResultingArtifact.KLib?
+    abstract fun getBinaryDependency(name: String): ResultingArtifact.Binary?
+
+    abstract fun registerAnalyzedModule(name: String, results: R)
+    abstract fun registerCompiledKLib(name: String, artifact: ResultingArtifact.KLib)
+    abstract fun registerCompiledBinary(name: String, artifact: ResultingArtifact.Binary)
 }
 
 // ------------------------- Components -------------------------
 
-abstract class FrontendFacade<R : FrontendResults> {
-    abstract fun analyze(module: TestModule, dependencyProvider: DependencyProvider<R>): R
+abstract class FrontendFacade<R : FrontendResults, out A : ResultingArtifact.Source<R>, in P : DependencyProvider<R, A>> {
+    abstract fun analyze(module: TestModule, dependencyProvider: P): R
 }
 
-abstract class Frontend2BackendConverter<R : FrontendResults, out I : BackendInitialInfo> {
-    abstract fun convert(module: TestModule, frontendResults: R, dependencyProvider: DependencyProvider<R>): I
+abstract class Frontend2BackendConverter<R : FrontendResults, in A : ResultingArtifact.Source<R>, out I : BackendInitialInfo> {
+    abstract fun convert(module: TestModule, frontendResults: R, dependencyProvider: DependencyProvider<R, A>): I
 }
 
 sealed class BackendFacade<in I : BackendInitialInfo, out R : ResultingArtifact> {
