@@ -5,7 +5,12 @@
 
 package org.jetbrains.kotlin.test.impl
 
+import com.intellij.psi.PsiElementFinder
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
+import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
+import org.jetbrains.kotlin.checkers.TestCheckerUtil
+import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.FirAnalyzerFacade
@@ -13,7 +18,9 @@ import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
 import org.jetbrains.kotlin.fir.session.FirJvmModuleInfo
 import org.jetbrains.kotlin.fir.session.FirSessionFactory
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.isKtFile
 import org.jetbrains.kotlin.test.model.*
 import org.junit.jupiter.api.fail
 
@@ -35,6 +42,27 @@ class FirDependencyProvider(
     private val analyzedModules = mutableMapOf<String, FirSourceArtifact>()
 
     private val testModulesByName: Map<String, TestModule> = testModules.map { it.name to it }.toMap()
+    private val builtinsByModule: MutableMap<TestModule, FirJvmModuleInfo> = mutableMapOf()
+    private val firModuleInfoByModule: MutableMap<TestModule, FirJvmModuleInfo> = mutableMapOf()
+
+    fun convertToFirModuleInfo(module: TestModule): FirJvmModuleInfo {
+        return firModuleInfoByModule.getOrPut(module) {
+            val dependencies = mutableListOf(builtinsModuleInfoForModule(module))
+            module.dependencies.mapTo(dependencies) {
+                convertToFirModuleInfo(getTestModule(it.moduleName))
+            }
+            FirJvmModuleInfo(
+                module.name,
+                dependencies
+            )
+        }
+    }
+
+    fun builtinsModuleInfoForModule(module: TestModule): FirJvmModuleInfo {
+        return builtinsByModule.getOrPut(module) {
+            FirJvmModuleInfo(Name.special("<built-ins>"), emptyList())
+        }
+    }
 
     override fun getTestModule(name: String): TestModule {
         return testModulesByName[name] ?: fail { "Module $name is not defined" }
@@ -74,24 +102,28 @@ class FirFrontendFacade(
     override fun analyze(module: TestModule, dependencyProvider: FirDependencyProvider): FirFrontendResults {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         // TODO: add configurable parser
-        val ktFiles = environment.getSourceFiles()
+
         val project = environment.project
+
+        PsiElementFinder.EP.getPoint(project).unregisterExtension(JavaElementFinder::class.java)
+
+        val ktFiles = module.files.filter { it.isKtFile }.map {
+            TestCheckerUtil.createCheckAndReturnPsiFile(
+                it.name,
+                configurationComponents.sourceFileProvider.getContentOfSourceFile(it),
+                project
+            )
+        }
+
         val sessionProvider = dependencyProvider.firSessionProvider
 
         val languageVersionSettings = configurationComponents.languageVersionSettingsProvider.extractSettingsFromDirectives(module)
-
-        val librariesScope = ProjectScope.getLibrariesScope(project)
-        val librariesModuleInfo = FirJvmModuleInfo.createForLibraries(module.name)
-        FirSessionFactory.createLibrarySession(
-            librariesModuleInfo,
-            sessionProvider,
-            librariesScope,
-            project,
-            environment.createPackagePartProvider(librariesScope)
-        )
+        val builtinsModuleInfo = dependencyProvider.builtinsModuleInfoForModule(module)
+        createSessionForBuiltins(builtinsModuleInfo, sessionProvider, environment)
+        createSessionForBinaryDependencies(module, sessionProvider, environment)
 
         val sourcesScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(project, ktFiles)
-        val sourcesModuleInfo = module.toModuleInfo(dependencyProvider)
+        val sourcesModuleInfo = dependencyProvider.convertToFirModuleInfo(module)
         val session = FirSessionFactory.createJavaModuleBasedSession(
             sourcesModuleInfo,
             sessionProvider,
@@ -107,12 +139,39 @@ class FirFrontendFacade(
             testFile to firFile
         }.toMap()
 
-        return FirFrontendResults(session, filesMap)
+        return FirFrontendResults(session, filesMap, firAnalyzerFacade)
     }
 
-    private fun TestModule.toModuleInfo(dependencyProvider: FirDependencyProvider): FirJvmModuleInfo = FirJvmModuleInfo(
-        name,
-        dependencies.map { dependencyProvider.getTestModule(it.moduleName).toModuleInfo(dependencyProvider) }
-    )
+    private fun createSessionForBuiltins(
+        builtinsModuleInfo: FirJvmModuleInfo,
+        sessionProvider: FirProjectSessionProvider,
+        environment: KotlinCoreEnvironment,
+    ) {
+        //For BuiltIns, registered in sessionProvider automatically
+        val project = environment.project
+        val allProjectScope = GlobalSearchScope.allScope(project)
+
+        FirSessionFactory.createLibrarySession(
+            builtinsModuleInfo, sessionProvider, allProjectScope, project,
+            environment.createPackagePartProvider(allProjectScope)
+        )
+    }
+
+    private fun createSessionForBinaryDependencies(
+        module: TestModule,
+        sessionProvider: FirProjectSessionProvider,
+        environment: KotlinCoreEnvironment
+    ) {
+        val project = environment.project
+        val librariesScope = ProjectScope.getLibrariesScope(project)
+        val librariesModuleInfo = FirJvmModuleInfo.createForLibraries(module.name)
+        FirSessionFactory.createLibrarySession(
+            librariesModuleInfo,
+            sessionProvider,
+            librariesScope,
+            project,
+            environment.createPackagePartProvider(librariesScope)
+        )
+    }
 }
 

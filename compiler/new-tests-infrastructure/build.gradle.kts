@@ -28,6 +28,9 @@ dependencies {
 
     // This is needed only for using FileComparisonFailure, which relies on JUnit 3 classes
     testRuntimeOnly(commonDep("junit:junit"))
+    testRuntimeOnly(intellijDep()) {
+        includeJars("jna", rootProject = rootProject)
+    }
 }
 
 sourceSets {

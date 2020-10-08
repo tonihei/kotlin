@@ -6,14 +6,20 @@
 package org.jetbrains.kotlin.test.components
 
 import com.intellij.openapi.Disposable
+import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
+import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
-import org.jetbrains.kotlin.cli.jvm.config.JvmContentRoot
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
+import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoot
+import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
+import org.jetbrains.kotlin.test.KotlinTestUtils
 import org.jetbrains.kotlin.test.model.TestFile
 import org.jetbrains.kotlin.test.model.TestModule
 
@@ -43,8 +49,19 @@ class KotlinCoreEnvironmentProviderImpl(
     private fun createCompilerConfiguration(module: TestModule): CompilerConfiguration {
         val configuration = CompilerConfiguration()
         configuration[CommonConfigurationKeys.MODULE_NAME] = module.name
-        // TODO: do we need message collector?
-        // see org/jetbrains/kotlin/test/KotlinTestUtils.java:304
+
+        configuration[CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY] = object : MessageCollector {
+            override fun clear() {}
+
+            override fun report(severity: CompilerMessageSeverity, message: String, location: CompilerMessageSourceLocation?) {
+                if (severity == CompilerMessageSeverity.ERROR) {
+                    val prefix = if (location == null) "" else "(" + location.path + ":" + location.line + ":" + location.column + ") "
+                    throw AssertionError(prefix + message)
+                }
+            }
+
+            override fun hasErrors(): Boolean = false
+        }
 
         // TODO: add parsing flags from directives
         // see org/jetbrains/kotlin/test/KotlinBaseTest.kt:93
@@ -54,6 +71,10 @@ class KotlinCoreEnvironmentProviderImpl(
             val files = javaFiles.map { components.sourceFileProvider.getRealFileForSourceFile(it) }
             configuration.addJavaSourceRoots(files)
         }
+
+        configuration.addJvmClasspathRoot(KotlinTestUtils.findMockJdkRtJar())
+        configuration.addJvmClasspathRoot(ForTestCompileRuntime.minimalRuntimeJarForTests())
+        configuration[JVMConfigurationKeys.NO_JDK] = true
 
         return configuration
     }

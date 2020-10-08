@@ -51,7 +51,7 @@ class SourceFileProviderImpl(val preprocessors: List<SourceFilePreprocessor>) : 
     private fun generateFinalContent(testFile: TestFile): String {
         return preprocessors.fold(testFile.content) { content, preprocessor ->
             preprocessor.process(testFile, content)
-        }.joinToString(File.separator)
+        }.joinToString(System.lineSeparator())
     }
 }
 

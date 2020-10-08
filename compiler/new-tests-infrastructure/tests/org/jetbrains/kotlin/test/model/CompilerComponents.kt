@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.test.model
 
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.analysis.FirAnalyzerFacade
 import org.jetbrains.kotlin.fir.backend.Fir2IrComponents
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
@@ -19,9 +20,10 @@ import org.jetbrains.kotlin.resolve.BindingContext
 sealed class FrontendResults
 
 // FIR
-class FirFrontendResults(
+data class FirFrontendResults(
     val session: FirSession,
-    val firFiles: Map<TestFile, FirFile>
+    val firFiles: Map<TestFile, FirFile>,
+    val firAnalyzerFacade: FirAnalyzerFacade
 ) : FrontendResults()
 
 // FE 1.0
