@@ -5,9 +5,9 @@
 
 package org.jetbrains.kotlin.test.directives
 
-import org.junit.jupiter.api.fail
+import org.jetbrains.kotlin.test.components.Assertions
 
-class RegisteredDirectivesBuilder(private val container: DirectivesContainer) {
+class RegisteredDirectivesBuilder(private val container: DirectivesContainer, private val assertions: Assertions) {
     companion object {
         private val DIRECTIVE_PATTERN = Regex("""^//\s*[!]?([A-Z_]+)(:[ \t]*(.*))?$""")
         private val SPACES_PATTERN = Regex("""[,]?[ \t]+""")
@@ -30,7 +30,7 @@ class RegisteredDirectivesBuilder(private val container: DirectivesContainer) {
     private val enumValueDirectives = mutableMapOf<EnumValueDirective<*>, MutableList<Enum<*>>>()
 
     /**
-     * returns [true] means that line contain directive
+     * returns true means that line contain directive
      */
     fun parse(line: String): Boolean {
         val rawDirective = parseDirective(line) ?: return false
@@ -63,7 +63,7 @@ class RegisteredDirectivesBuilder(private val container: DirectivesContainer) {
         val values: List<*> = when (directive) {
             is SimpleDirective -> {
                 if (rawValues != null) {
-                    fail {
+                    assertions.fail {
                         "Directive $directive should have no arguments, but ${rawValues.joinToString(", ")} are passed"
                     }
                 }
@@ -76,12 +76,12 @@ class RegisteredDirectivesBuilder(private val container: DirectivesContainer) {
 
             is EnumValueDirective<*> -> {
                 if (rawValues == null) {
-                    fail {
+                    assertions.fail {
                         "Directive $directive must have at least one value"
                     }
                 }
                 rawValues.map {
-                    directive.extractValue(it) ?: fail {
+                    directive.extractValue(it) ?: assertions.fail {
                         "$it is not valid value for $directive. Acceptable values: ${directive.possibleValues.toArrayString()}"
                     }
                 }

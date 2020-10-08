@@ -7,10 +7,7 @@ package org.jetbrains.kotlin.test
 
 import com.intellij.openapi.Disposable
 import org.jetbrains.kotlin.fir.render
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
-import org.jetbrains.kotlin.test.components.KotlinCoreEnvironmentProviderImpl
-import org.jetbrains.kotlin.test.components.LanguageVersionSettingsProviderImpl
-import org.jetbrains.kotlin.test.components.SourceFileProviderImpl
+import org.jetbrains.kotlin.test.components.*
 import org.jetbrains.kotlin.test.directives.ModuleStructureExtractor
 import org.jetbrains.kotlin.test.directives.SimpleDirectivesContainer
 import org.jetbrains.kotlin.test.frontend.fir.FirDependencyProvider
@@ -30,10 +27,11 @@ class SomeDiagnosticsTest {
             kotlinCoreEnvironmentProvider = KotlinCoreEnvironmentProviderImpl(this, TestDisposable())
             sourceFileProvider = SourceFileProviderImpl(emptyList())
             languageVersionSettingsProvider = LanguageVersionSettingsProviderImpl()
+            assertions = JUnit5Assertions
         }
         val facade = FirFrontendFacade(components)
 
-        val (modules, globalDirectives) = ModuleStructureExtractor.splitTestDataByModules(fileName, SimpleDirectivesContainer.Empty)
+        val (modules, globalDirectives) = ModuleStructureExtractor.splitTestDataByModules(fileName, SimpleDirectivesContainer.Empty, components.assertions)
         val dependencyProvider = FirDependencyProvider(components, modules)
         for (module in modules) {
             val analysisResults = facade.analyze(module, dependencyProvider)

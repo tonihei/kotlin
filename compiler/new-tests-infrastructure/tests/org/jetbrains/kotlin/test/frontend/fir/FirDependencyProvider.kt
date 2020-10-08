@@ -12,13 +12,16 @@ import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.model.DependencyProvider
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
-import org.junit.jupiter.api.fail
 
 class FirDependencyProvider(
     val configurationComponents: ConfigurationComponents,
     testModules: List<TestModule>
 ) : DependencyProvider<FirFrontendResults, FirSourceArtifact>() {
     val firSessionProvider = FirProjectSessionProvider()
+
+    private val assertions
+        get() = configurationComponents.assertions
+
     private val analyzedModules = mutableMapOf<String, FirSourceArtifact>()
 
     private val testModulesByName: Map<String, TestModule> = testModules.map { it.name to it }.toMap()
@@ -45,7 +48,7 @@ class FirDependencyProvider(
     }
 
     override fun getTestModule(name: String): TestModule {
-        return testModulesByName[name] ?: fail { "Module $name is not defined" }
+        return testModulesByName[name] ?: assertions.fail { "Module $name is not defined" }
     }
 
     override fun getSourceModule(name: String): FirSourceArtifact? {

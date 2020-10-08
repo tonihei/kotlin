@@ -15,4 +15,5 @@ class ConfigurationComponents {
     lateinit var kotlinCoreEnvironmentProvider: KotlinCoreEnvironmentProvider
     lateinit var sourceFileProvider: SourceFileProvider
     lateinit var languageVersionSettingsProvider: LanguageVersionSettingsProvider
+    lateinit var assertions: Assertions
 }

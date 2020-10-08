@@ -7,20 +7,23 @@ package org.jetbrains.kotlin.test.directives
 
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
+import org.jetbrains.kotlin.test.components.Assertions
 import org.jetbrains.kotlin.test.model.*
-import org.junit.jupiter.api.fail
 import java.io.File
 
 class ModuleStructureExtractor private constructor(
     private val testDataFiles: List<File>,
-    private val directivesContainer: DirectivesContainer
+    private val directivesContainer: DirectivesContainer,
+    private val assertions: Assertions
 ) {
     companion object {
-        fun splitTestDataByModules(testDataFileName: String, directivesContainer: DirectivesContainer): TestModuleStructure {
+        fun splitTestDataByModules(testDataFileName: String, directivesContainer: DirectivesContainer, assertions: Assertions): TestModuleStructure {
             val testDataFile = File(testDataFileName)
-            val extractor = ModuleStructureExtractor(listOf(testDataFile), directivesContainer)
+            val extractor = ModuleStructureExtractor(listOf(testDataFile), directivesContainer, assertions)
             return extractor.splitTestDataByModules()
         }
+
+        private val allowedExtensionsForFiles = listOf(".kt", ".java")
     }
 
     private lateinit var currentTestDataFile: File
@@ -44,13 +47,13 @@ class ModuleStructureExtractor private constructor(
     private var linesOfCurrentFile = mutableListOf<String>()
     private var startLineNumberOfCurrentFile = 0
 
-    private var directivesBuilder = RegisteredDirectivesBuilder(directivesContainer)
+    private var directivesBuilder = RegisteredDirectivesBuilder(directivesContainer, assertions)
 
     private var globalDirectives: RegisteredDirectives? = null
 
     private val modules = mutableListOf<TestModule>()
 
-    private val moduleDirectiveBuilder = RegisteredDirectivesBuilder(ModuleStructureDirectives)
+    private val moduleDirectiveBuilder = RegisteredDirectivesBuilder(ModuleStructureDirectives, assertions)
 
     fun splitTestDataByModules(): TestModuleStructure {
         for (testDataFile in testDataFiles) {
@@ -105,7 +108,7 @@ class ModuleStructureExtractor private constructor(
                 } else {
                     resetFileCaches()
                 }
-                currentFileName = (values.first() as String).also(Validators::validateFileName)
+                currentFileName = (values.first() as String).also(::validateFileName)
                 startLineNumberOfCurrentFile = lineNumber
             }
             else -> return false
@@ -149,7 +152,7 @@ class ModuleStructureExtractor private constructor(
         currentModuleTargetPlatform = null
         filesOfCurrentModule = mutableListOf()
         dependenciesOfCurrentModule = mutableListOf()
-        directivesBuilder = RegisteredDirectivesBuilder(directivesContainer)
+        directivesBuilder = RegisteredDirectivesBuilder(directivesContainer, assertions)
     }
 
     private fun resetFileCaches() {
@@ -168,6 +171,14 @@ class ModuleStructureExtractor private constructor(
         // TODO: implement proper target parsing
         return null
     }
+
+    private fun validateFileName(fileName: String) {
+        if (!allowedExtensionsForFiles.any { fileName.endsWith(it) }) {
+            assertions.fail {
+                "Filename $fileName is not valid. Allowed extensions: ${allowedExtensionsForFiles.toArrayString()}"
+            }
+        }
+    }
 }
 
 fun Iterable<*>.toArrayString(): String = joinToString(separator = ", ", prefix = "[", postfix = "]")
@@ -180,16 +191,4 @@ inline fun <reified T : Enum<T>>valueOfOrNull(value: String): T? {
         }
     }
     return null
-}
-
-object Validators {
-    val allowedExtensionsForFiles = listOf(".kt", ".java")
-
-    fun validateFileName(fileName: String) {
-        if (!allowedExtensionsForFiles.any { fileName.endsWith(it) }) {
-            fail {
-                "Filename $fileName is not valid. Allowed extensions: ${allowedExtensionsForFiles.toArrayString()}"
-            }
-        }
-    }
 }
