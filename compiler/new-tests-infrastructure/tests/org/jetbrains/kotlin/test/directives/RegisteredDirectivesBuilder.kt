@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.test.directives
 
-import org.jetbrains.kotlin.test.model.toArrayString
 import org.junit.jupiter.api.fail
 
 class RegisteredDirectivesBuilder(private val container: DirectivesContainer) {
@@ -99,4 +98,3 @@ class RegisteredDirectivesBuilder(private val container: DirectivesContainer) {
         return RegisteredDirectives(simpleDirectives, stringValueDirectives, enumValueDirectives)
     }
 }
-

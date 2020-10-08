@@ -11,10 +11,10 @@ import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.components.KotlinCoreEnvironmentProviderImpl
 import org.jetbrains.kotlin.test.components.LanguageVersionSettingsProviderImpl
 import org.jetbrains.kotlin.test.components.SourceFileProviderImpl
+import org.jetbrains.kotlin.test.directives.ModuleStructureExtractor
 import org.jetbrains.kotlin.test.directives.SimpleDirectivesContainer
-import org.jetbrains.kotlin.test.impl.FirDependencyProvider
-import org.jetbrains.kotlin.test.impl.FirFrontendFacade
-import org.jetbrains.kotlin.test.model.ModuleStructureExtractor
+import org.jetbrains.kotlin.test.frontend.fir.FirDependencyProvider
+import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
 import org.junit.jupiter.api.Test
 
 class SomeDiagnosticsTest {
@@ -38,7 +38,7 @@ class SomeDiagnosticsTest {
         for (module in modules) {
             val analysisResults = facade.analyze(module, dependencyProvider)
             dependencyProvider.registerAnalyzedModule(module.name, analysisResults)
-            val (session, firFiles) = analysisResults
+            val (session, firFiles, _) = analysisResults
             firFiles.values.forEach { println(it.render()) }
         }
     }

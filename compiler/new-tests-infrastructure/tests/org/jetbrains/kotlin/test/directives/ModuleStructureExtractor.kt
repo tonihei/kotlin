@@ -3,13 +3,11 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
-package org.jetbrains.kotlin.test.model
+package org.jetbrains.kotlin.test.directives
 
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
-import org.jetbrains.kotlin.test.directives.DirectivesContainer
-import org.jetbrains.kotlin.test.directives.RegisteredDirectives
-import org.jetbrains.kotlin.test.directives.RegisteredDirectivesBuilder
+import org.jetbrains.kotlin.test.model.*
 import org.junit.jupiter.api.fail
 import java.io.File
 
