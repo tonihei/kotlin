@@ -11,7 +11,8 @@ import java.io.File
 
 data class TestModuleStructure(
     val modules: List<TestModule>,
-    val globalDirectives: RegisteredDirectives
+    val globalDirectives: RegisteredDirectives,
+    val originalTestDataFiles: List<File>
 ) {
     override fun toString(): String {
         return buildString {

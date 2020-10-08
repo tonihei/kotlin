@@ -67,7 +67,7 @@ class ModuleStructureExtractor private constructor(
             }
         }
         finishModule()
-        return TestModuleStructure(modules, globalDirectives ?: RegisteredDirectives.Empty)
+        return TestModuleStructure(modules, globalDirectives ?: RegisteredDirectives.Empty, testDataFiles)
     }
 
     /*

@@ -6,18 +6,21 @@
 package org.jetbrains.kotlin.test
 
 import com.intellij.openapi.Disposable
-import org.jetbrains.kotlin.fir.render
+import com.intellij.testFramework.TestDataPath
 import org.jetbrains.kotlin.test.components.*
 import org.jetbrains.kotlin.test.directives.ModuleStructureExtractor
 import org.jetbrains.kotlin.test.directives.SimpleDirectivesContainer
 import org.jetbrains.kotlin.test.frontend.fir.FirDependencyProvider
 import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
+import org.jetbrains.kotlin.test.frontend.fir.handlers.FirDumpHandler
 import org.junit.jupiter.api.Test
 
+@TestMetadata("compiler/new-tests-infrastructure/testData")
+@TestDataPath("\$PROJECT_ROOT")
 class SomeDiagnosticsTest {
 
     @Test
-    @TestMetadata("compiler/new-tests-infrastructure/testData/a.kt")
+    @TestMetadata("a.kt")
     fun testSimple() {
         doTest("compiler/new-tests-infrastructure/testData/a.kt")
     }
@@ -29,16 +32,26 @@ class SomeDiagnosticsTest {
             languageVersionSettingsProvider = LanguageVersionSettingsProviderImpl()
             assertions = JUnit5Assertions
         }
+
+        val globalHandlers = listOf(FirDumpHandler(components.assertions))
+
         val facade = FirFrontendFacade(components)
 
-        val (modules, globalDirectives) = ModuleStructureExtractor.splitTestDataByModules(fileName, SimpleDirectivesContainer.Empty, components.assertions)
-        val dependencyProvider = FirDependencyProvider(components, modules)
-        for (module in modules) {
+        val moduleStructure = ModuleStructureExtractor.splitTestDataByModules(
+            testDataFileName = fileName,
+            directivesContainer = SimpleDirectivesContainer.Empty,
+            assertions = components.assertions
+        )
+
+        val dependencyProvider = FirDependencyProvider(components, moduleStructure.modules)
+
+        for (module in moduleStructure.modules) {
             val analysisResults = facade.analyze(module, dependencyProvider)
             dependencyProvider.registerAnalyzedModule(module.name, analysisResults)
-            val (session, firFiles, _) = analysisResults
-            firFiles.values.forEach { println(it.render()) }
+            globalHandlers.forEach { it.processModule(module, analysisResults) }
         }
+
+        globalHandlers.forEach { it.processAfterAllModules(moduleStructure) }
     }
 }
 
