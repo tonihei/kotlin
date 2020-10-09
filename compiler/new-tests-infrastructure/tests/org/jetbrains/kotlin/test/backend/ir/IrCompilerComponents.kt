@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.test.backend.ir
 
-import org.jetbrains.kotlin.fir.backend.Fir2IrComponents
+import org.jetbrains.kotlin.codegen.JvmBackendClassResolver
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.psi2ir.PsiSourceManager
@@ -13,14 +13,14 @@ import org.jetbrains.kotlin.test.model.BackendFacade
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
 // IR backend (JVM, JS, Native)
-class IrBackendInitialInfo(
+class IrBackendInputInfo(
     val irModuleFragment: IrModuleFragment,
     val symbolTable: SymbolTable,
     val sourceManager: PsiSourceManager,
-    val components: Fir2IrComponents
-) : ResultingArtifact.BackendInitialInfo()
+    val jvmBackendClassResolver: JvmBackendClassResolver
+) : ResultingArtifact.BackendInputInfo()
 
 /**
  * Will have one implementation for KLib and three implementations for different binaries
  */
-abstract class IrBackendFacade<out R : ResultingArtifact.Binary> : BackendFacade<IrBackendInitialInfo, R>()
+abstract class IrBackendFacade<out R : ResultingArtifact.Binary> : BackendFacade<IrBackendInputInfo, R>()

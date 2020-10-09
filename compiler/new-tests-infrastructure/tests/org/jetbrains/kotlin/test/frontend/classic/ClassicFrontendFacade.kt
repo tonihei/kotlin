@@ -47,8 +47,7 @@ class ClassicFrontendFacade(
         dependencyProvider.replaceModuleDescriptorForModule(module, analysisResult.moduleDescriptor)
         return ClassicFrontendSourceArtifacts(
             ktFilesMap,
-            analysisResult.bindingContext,
-            analysisResult.moduleDescriptor,
+            analysisResult,
             languageVersionSettings
         )
     }

@@ -5,18 +5,22 @@
 
 package org.jetbrains.kotlin.test.backend.classic
 
+import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.test.model.BackendFacade
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
 // Old backend (JVM and JS)
-class ClassicBackendInitialInfo(
-    val psiFiles: List<KtFile>,
-    val bindingContext: BindingContext
-) : ResultingArtifact.BackendInitialInfo()
+data class ClassicBackendInputInfo(
+    val psiFiles: Collection<KtFile>,
+    val bindingContext: BindingContext,
+    val moduleDescriptor: ModuleDescriptor,
+    val languageVersionSettings: LanguageVersionSettings
+) : ResultingArtifact.BackendInputInfo()
 
 /**
  * Will have two implementations: ClassicJvmBackendFacade and ClassicJsBackendFacade
  */
-abstract class ClassicBackendFacade<R : ResultingArtifact.Binary> : BackendFacade<ClassicBackendInitialInfo, R>()
+abstract class ClassicBackendFacade<R : ResultingArtifact.Binary> : BackendFacade<ClassicBackendInputInfo, R>()

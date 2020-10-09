@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestFile
 
-class FirSourceArtifact(
+data class FirSourceArtifact(
     val session: FirSession,
     val firFiles: Map<TestFile, FirFile>,
     val firAnalyzerFacade: FirAnalyzerFacade

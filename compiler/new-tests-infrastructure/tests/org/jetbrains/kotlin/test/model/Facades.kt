@@ -9,10 +9,10 @@ abstract class FrontendFacade<R : ResultingArtifact.Source, in P : DependencyPro
     abstract fun analyze(module: TestModule, dependencyProvider: P): R
 }
 
-abstract class Frontend2BackendConverter<R : ResultingArtifact.Source, out I : ResultingArtifact.BackendInitialInfo> {
+abstract class Frontend2BackendConverter<R : ResultingArtifact.Source, out I : ResultingArtifact.BackendInputInfo> {
     abstract fun convert(module: TestModule, frontendResults: R, dependencyProvider: DependencyProvider<R>): I
 }
 
-abstract class BackendFacade<in I : ResultingArtifact.BackendInitialInfo, out R : ResultingArtifact.Binary> {
+abstract class BackendFacade<in I : ResultingArtifact.BackendInputInfo, out R : ResultingArtifact.Binary> {
     abstract fun produce(initialInfo: I): R
 }

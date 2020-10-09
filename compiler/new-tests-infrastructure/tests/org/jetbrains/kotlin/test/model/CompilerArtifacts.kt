@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.test.components.ConfigurationComponents
 
 sealed class ResultingArtifact {
     abstract class Source : ResultingArtifact()
-    abstract class BackendInitialInfo : ResultingArtifact()
+    abstract class BackendInputInfo : ResultingArtifact()
     class KLib : ResultingArtifact()
     sealed class Binary : ResultingArtifact() {
         class Jvm : Binary()
