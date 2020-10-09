@@ -5,10 +5,10 @@
 
 package org.jetbrains.kotlin.test.frontend.fir.handlers
 
-import org.jetbrains.kotlin.test.frontend.fir.FirFrontendResults
+import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 import org.jetbrains.kotlin.test.model.AllModulesAnalysisHandler
 import org.jetbrains.kotlin.test.model.FrontendResultsHandler
 
-abstract class FirAnalysisHandler<in S> : FrontendResultsHandler<FirFrontendResults, S>()
+abstract class FirAnalysisHandler<in S> : FrontendResultsHandler<FirSourceArtifact, S>()
 
-abstract class FirAllModulesAnalysisHandler<S> : AllModulesAnalysisHandler<FirFrontendResults, S, FirAnalysisHandler<S>>()
+abstract class FirAllModulesAnalysisHandler<S> : AllModulesAnalysisHandler<FirSourceArtifact, S, FirAnalysisHandler<S>>()

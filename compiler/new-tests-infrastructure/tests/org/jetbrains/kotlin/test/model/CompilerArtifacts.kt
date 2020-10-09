@@ -5,12 +5,11 @@
 
 package org.jetbrains.kotlin.test.model
 
-abstract class FrontendResults
-
-abstract class BackendInitialInfo
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
 
 sealed class ResultingArtifact {
-    abstract class Source<R : FrontendResults> : ResultingArtifact()
+    abstract class Source : ResultingArtifact()
+    abstract class BackendInitialInfo : ResultingArtifact()
     class KLib : ResultingArtifact()
     sealed class Binary : ResultingArtifact() {
         class Jvm : Binary()
@@ -19,10 +18,17 @@ sealed class ResultingArtifact {
     }
 }
 
-abstract class DependencyProvider<R : FrontendResults, out A : ResultingArtifact.Source<R>> {
-    abstract fun getTestModule(name: String): TestModule
+abstract class DependencyProvider<R : ResultingArtifact.Source>(
+    val configurationComponents: ConfigurationComponents,
+    testModules: List<TestModule>
+) {
+    protected val testModulesByName: Map<String, TestModule> = testModules.map { it.name to it }.toMap()
 
-    abstract fun getSourceModule(name: String): A?
+    fun getTestModule(name: String): TestModule {
+        return testModulesByName[name] ?: configurationComponents.assertions.fail { "Module $name is not defined" }
+    }
+
+    abstract fun getSourceModule(name: String): R?
     abstract fun getCompiledKlib(name: String): ResultingArtifact.KLib?
     abstract fun getBinaryDependency(name: String): ResultingArtifact.Binary?
 

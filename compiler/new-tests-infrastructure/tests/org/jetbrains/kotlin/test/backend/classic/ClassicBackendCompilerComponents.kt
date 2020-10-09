@@ -8,14 +8,13 @@ package org.jetbrains.kotlin.test.backend.classic
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.test.model.BackendFacade
-import org.jetbrains.kotlin.test.model.BackendInitialInfo
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
 // Old backend (JVM and JS)
 class ClassicBackendInitialInfo(
     val psiFiles: List<KtFile>,
     val bindingContext: BindingContext
-) : BackendInitialInfo()
+) : ResultingArtifact.BackendInitialInfo()
 
 /**
  * Will have two implementations: ClassicJvmBackendFacade and ClassicJsBackendFacade

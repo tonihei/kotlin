@@ -9,8 +9,8 @@ sealed class AnalysisHandler<in I, in S> {
     abstract fun processModule(module: TestModule, info: I, state: S)
 }
 
-abstract class FrontendResultsHandler<in R : FrontendResults, in S> : AnalysisHandler<R, S>()
-abstract class BackendInitialInfoHandler<in I : BackendInitialInfo, in S> : AnalysisHandler<I, S>()
+abstract class FrontendResultsHandler<in R : ResultingArtifact.Source, in S> : AnalysisHandler<R, S>()
+abstract class BackendInitialInfoHandler<in I : ResultingArtifact.BackendInitialInfo, in S> : AnalysisHandler<I, S>()
 abstract class ArtifactsResultsHandler<in A : ResultingArtifact, in S> : AnalysisHandler<A, S>()
 
 abstract class AllModulesAnalysisHandler<in I, S, H : AnalysisHandler<I, S>> {

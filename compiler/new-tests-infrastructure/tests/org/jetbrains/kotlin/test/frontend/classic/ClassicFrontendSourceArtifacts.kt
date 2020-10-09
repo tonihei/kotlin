@@ -5,13 +5,14 @@
 
 package org.jetbrains.kotlin.test.frontend.classic
 
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.test.model.FrontendResults
+import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestFile
 
-// FE 1.0
-class ClassicFrontendResults(
+data class ClassicFrontendSourceArtifacts(
     val psiFiles: Map<TestFile, KtFile>,
-    val bindingContext: BindingContext
-) : FrontendResults()
+    val bindingContext: BindingContext,
+    val moduleDescriptor: ModuleDescriptor
+) : ResultingArtifact.Source()

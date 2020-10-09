@@ -7,7 +7,7 @@ package org.jetbrains.kotlin.test.frontend.fir.handlers
 
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.test.components.Assertions
-import org.jetbrains.kotlin.test.frontend.fir.FirFrontendResults
+import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.model.TestModuleStructure
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumper
@@ -26,7 +26,7 @@ class FirDumpHandler(private val assertions: Assertions) : FirAllModulesAnalysis
     }
 
     private object ModuleHandler : FirAnalysisHandler<MultiModuleInfoDumper>() {
-        override fun processModule(module: TestModule, info: FirFrontendResults, state: MultiModuleInfoDumper) {
+        override fun processModule(module: TestModule, info: FirSourceArtifact, state: MultiModuleInfoDumper) {
             val builderForModule = state.builderForModule(module)
             val firFiles = info.firFiles
             firFiles.values.forEach { builderForModule.append(it.render()) }

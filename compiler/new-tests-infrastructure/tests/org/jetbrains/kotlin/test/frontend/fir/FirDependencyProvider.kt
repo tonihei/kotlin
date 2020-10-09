@@ -14,17 +14,12 @@ import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
 
 class FirDependencyProvider(
-    val configurationComponents: ConfigurationComponents,
+    configurationComponents: ConfigurationComponents,
     testModules: List<TestModule>
-) : DependencyProvider<FirFrontendResults, FirSourceArtifact>() {
+) : DependencyProvider<FirSourceArtifact>(configurationComponents, testModules) {
     val firSessionProvider = FirProjectSessionProvider()
 
-    private val assertions
-        get() = configurationComponents.assertions
-
     private val analyzedModules = mutableMapOf<String, FirSourceArtifact>()
-
-    private val testModulesByName: Map<String, TestModule> = testModules.map { it.name to it }.toMap()
     private val builtinsByModule: MutableMap<TestModule, FirJvmModuleInfo> = mutableMapOf()
     private val firModuleInfoByModule: MutableMap<TestModule, FirJvmModuleInfo> = mutableMapOf()
 
@@ -47,10 +42,6 @@ class FirDependencyProvider(
         }
     }
 
-    override fun getTestModule(name: String): TestModule {
-        return testModulesByName[name] ?: assertions.fail { "Module $name is not defined" }
-    }
-
     override fun getSourceModule(name: String): FirSourceArtifact? {
         return analyzedModules[name]
     }
@@ -63,11 +54,11 @@ class FirDependencyProvider(
         TODO("Not yet implemented")
     }
 
-    override fun registerAnalyzedModule(name: String, results: FirFrontendResults) {
+    override fun registerAnalyzedModule(name: String, results: FirSourceArtifact) {
         if (name in analyzedModules) {
             throw IllegalArgumentException("Analysis results of $name module already registered")
         }
-        analyzedModules[name] = FirSourceArtifact(results)
+        analyzedModules[name] = results
     }
 
     override fun registerCompiledKLib(name: String, artifact: ResultingArtifact.KLib) {
