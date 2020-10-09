@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.test.frontend.classic
 
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -14,5 +15,6 @@ import org.jetbrains.kotlin.test.model.TestFile
 data class ClassicFrontendSourceArtifacts(
     val psiFiles: Map<TestFile, KtFile>,
     val bindingContext: BindingContext,
-    val moduleDescriptor: ModuleDescriptor
+    val moduleDescriptor: ModuleDescriptor,
+    val languageVersionSettings: LanguageVersionSettings
 ) : ResultingArtifact.Source()

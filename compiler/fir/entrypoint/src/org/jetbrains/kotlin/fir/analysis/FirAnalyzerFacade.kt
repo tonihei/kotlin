@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.ir.backend.jvm.serialization.JvmManglerDesc
 import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
 import org.jetbrains.kotlin.psi.KtFile
 
-class FirAnalyzerFacade(val session: FirSession, val languageVersionSettings: LanguageVersionSettings, val ktFiles: List<KtFile>) {
+class FirAnalyzerFacade(val session: FirSession, val languageVersionSettings: LanguageVersionSettings, val ktFiles: Collection<KtFile>) {
     private var firFiles: List<FirFile>? = null
     private var scopeSession: ScopeSession? = null
     private var collectedDiagnostics: List<FirDiagnostic<*>>? = null

@@ -5,6 +5,9 @@
 
 package org.jetbrains.kotlin.test.components
 
+import com.intellij.openapi.project.Project
+import org.jetbrains.kotlin.checkers.TestCheckerUtil
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.test.KotlinTestUtils
 import org.jetbrains.kotlin.test.model.FileContent
 import org.jetbrains.kotlin.test.model.TestFile
@@ -53,6 +56,21 @@ class SourceFileProviderImpl(val preprocessors: List<SourceFilePreprocessor>) : 
             preprocessor.process(testFile, content)
         }.joinToString(System.lineSeparator())
     }
+}
+
+fun SourceFileProvider.getKtFileForSourceFile(testFile: TestFile, project: Project): KtFile {
+    return TestCheckerUtil.createCheckAndReturnPsiFile(
+        testFile.name,
+        getContentOfSourceFile(testFile),
+        project
+    )
+}
+
+fun SourceFileProvider.getKtFilesForSourceFiles(testFiles: List<TestFile>, project: Project): Map<TestFile, KtFile> {
+    return testFiles.mapNotNull {
+        if (!it.isKtFile) return@mapNotNull null
+        it to getKtFileForSourceFile(it, project)
+    }.toMap()
 }
 
 val TestFile.isKtFile: Boolean

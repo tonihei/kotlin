@@ -9,7 +9,6 @@ import com.intellij.psi.PsiElementFinder
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
-import org.jetbrains.kotlin.checkers.TestCheckerUtil
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.fir.analysis.FirAnalyzerFacade
@@ -17,7 +16,7 @@ import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
 import org.jetbrains.kotlin.fir.session.FirJvmModuleInfo
 import org.jetbrains.kotlin.fir.session.FirSessionFactory
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
-import org.jetbrains.kotlin.test.components.isKtFile
+import org.jetbrains.kotlin.test.components.getKtFilesForSourceFiles
 import org.jetbrains.kotlin.test.model.*
 
 class FirFrontendFacade(
@@ -31,13 +30,7 @@ class FirFrontendFacade(
 
         PsiElementFinder.EP.getPoint(project).unregisterExtension(JavaElementFinder::class.java)
 
-        val ktFiles = module.files.filter { it.isKtFile }.map {
-            TestCheckerUtil.createCheckAndReturnPsiFile(
-                it.name,
-                configurationComponents.sourceFileProvider.getContentOfSourceFile(it),
-                project
-            )
-        }
+        val ktFiles = configurationComponents.sourceFileProvider.getKtFilesForSourceFiles(module.files, project).values
 
         val sessionProvider = dependencyProvider.firSessionProvider
 

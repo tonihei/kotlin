@@ -11,9 +11,17 @@ import org.jetbrains.kotlin.test.util.StringUtils.trimTrailingWhitespacesAndAddN
 import org.jetbrains.kotlin.utils.rethrow
 import java.io.File
 import java.io.IOException
+import org.junit.jupiter.api.Assertions as Junit5Assertions
 
 abstract class Assertions {
+    fun assertEqualsToFile(expectedFile: File, actual: String, sanitizer: (String) -> String = { it }) {
+        assertEqualsToFile("Actual data differs from file content", expectedFile, actual, sanitizer)
+    }
+
     abstract fun assertEqualsToFile(message: String, expectedFile: File, actual: String, sanitizer: (String) -> String = { it })
+    abstract fun assertEquals(expected: Any?, actual: Any?, message: String = "")
+    abstract fun assertTrue(value: Boolean)
+    abstract fun assertFalse(value: Boolean)
     abstract fun fail(message: () -> String): Nothing
 }
 
@@ -36,7 +44,18 @@ object JUnit5Assertions : Assertions() {
         } catch (e: IOException) {
             throw rethrow(e)
         }
+    }
 
+    override fun assertEquals(expected: Any?, actual: Any?, message: String) {
+        Junit5Assertions.assertEquals(expected, actual, message)
+    }
+
+    override fun assertTrue(value: Boolean) {
+        Junit5Assertions.assertTrue(value)
+    }
+
+    override fun assertFalse(value: Boolean) {
+        Junit5Assertions.assertFalse(value)
     }
 
     override fun fail(message: () -> String): Nothing {

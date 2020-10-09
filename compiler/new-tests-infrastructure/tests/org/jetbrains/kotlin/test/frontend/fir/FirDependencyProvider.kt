@@ -19,7 +19,6 @@ class FirDependencyProvider(
 ) : DependencyProvider<FirSourceArtifact>(configurationComponents, testModules) {
     val firSessionProvider = FirProjectSessionProvider()
 
-    private val analyzedModules = mutableMapOf<String, FirSourceArtifact>()
     private val builtinsByModule: MutableMap<TestModule, FirJvmModuleInfo> = mutableMapOf()
     private val firModuleInfoByModule: MutableMap<TestModule, FirJvmModuleInfo> = mutableMapOf()
 
@@ -42,23 +41,12 @@ class FirDependencyProvider(
         }
     }
 
-    override fun getSourceModule(name: String): FirSourceArtifact? {
-        return analyzedModules[name]
-    }
-
     override fun getCompiledKlib(name: String): ResultingArtifact.KLib? {
         TODO("Not yet implemented")
     }
 
     override fun getBinaryDependency(name: String): ResultingArtifact.Binary? {
         TODO("Not yet implemented")
-    }
-
-    override fun registerAnalyzedModule(name: String, results: FirSourceArtifact) {
-        if (name in analyzedModules) {
-            throw IllegalArgumentException("Analysis results of $name module already registered")
-        }
-        analyzedModules[name] = results
     }
 
     override fun registerCompiledKLib(name: String, artifact: ResultingArtifact.KLib) {

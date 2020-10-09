@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.test.model
 
+import org.jetbrains.kotlin.test.components.Assertions
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
 
 sealed class ResultingArtifact {
@@ -22,17 +23,30 @@ abstract class DependencyProvider<R : ResultingArtifact.Source>(
     val configurationComponents: ConfigurationComponents,
     testModules: List<TestModule>
 ) {
-    protected val testModulesByName: Map<String, TestModule> = testModules.map { it.name to it }.toMap()
+    protected val assertions: Assertions
+        get() = configurationComponents.assertions
+
+    private val testModulesByName: Map<String, TestModule> = testModules.map { it.name to it }.toMap()
+    private val analyzedModules: MutableMap<String, R> = mutableMapOf()
 
     fun getTestModule(name: String): TestModule {
-        return testModulesByName[name] ?: configurationComponents.assertions.fail { "Module $name is not defined" }
+        return testModulesByName[name] ?: assertions.fail { "Module $name is not defined" }
     }
 
-    abstract fun getSourceModule(name: String): R?
+    fun getSourceModule(name: String): R? {
+        return analyzedModules[name]
+    }
+
     abstract fun getCompiledKlib(name: String): ResultingArtifact.KLib?
     abstract fun getBinaryDependency(name: String): ResultingArtifact.Binary?
 
-    abstract fun registerAnalyzedModule(name: String, results: R)
+    fun registerAnalyzedModule(name: String, results: R) {
+        if (name in analyzedModules) {
+            throw IllegalArgumentException("Analysis results of $name module already registered")
+        }
+        analyzedModules[name] = results
+    }
+
     abstract fun registerCompiledKLib(name: String, artifact: ResultingArtifact.KLib)
     abstract fun registerCompiledBinary(name: String, artifact: ResultingArtifact.Binary)
 }
