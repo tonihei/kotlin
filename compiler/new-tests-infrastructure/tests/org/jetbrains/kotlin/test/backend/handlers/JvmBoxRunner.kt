@@ -20,12 +20,12 @@ import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.lang.reflect.Method
 import java.net.URLClassLoader
 
-class JvmBoxRunner(val assertions: Assertions) : ArtifactsResultsHandler<ResultingArtifact.Binary.Jvm, Nothing?>() {
+class JvmBoxRunner(val assertions: Assertions) : ArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>() {
     companion object {
         private val BOX_IN_SEPARATE_PROCESS_PORT = System.getProperty("kotlin.test.box.in.separate.process.port")
     }
 
-    override fun processModule(module: TestModule, info: ResultingArtifact.Binary.Jvm, state: Nothing?) {
+    override fun processModule(module: TestModule, info: ResultingArtifact.Binary.Jvm) {
         val ktFiles = info.classFileFactory.inputFiles
         val classLoader = createClassLoader(info.classFileFactory)
         for (ktFile in ktFiles) {

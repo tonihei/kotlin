@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
 import org.jetbrains.kotlin.test.frontend.fir.handlers.FirDumpHandler
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
-import org.jetbrains.kotlin.test.model.processModule
 import org.junit.jupiter.api.Test
 
 @TestMetadata("compiler/new-tests-infrastructure/testData")

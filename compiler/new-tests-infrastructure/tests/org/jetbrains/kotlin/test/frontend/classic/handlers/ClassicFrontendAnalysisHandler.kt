@@ -9,9 +9,9 @@ import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
 import org.jetbrains.kotlin.test.model.AllModulesAnalysisHandler
 import org.jetbrains.kotlin.test.model.FrontendResultsHandler
 
-abstract class ClassicFrontendAnalysisHandler<in S> : FrontendResultsHandler<ClassicFrontendSourceArtifacts, S>()
+abstract class ClassicFrontendAnalysisHandler : FrontendResultsHandler<ClassicFrontendSourceArtifacts>()
 
-abstract class ClassicFrontendAllModulesAnalysisHandler<S> :
-    AllModulesAnalysisHandler<ClassicFrontendSourceArtifacts, S, ClassicFrontendAnalysisHandler<S>>()
+abstract class ClassicFrontendAllModulesAnalysisHandler :
+    AllModulesAnalysisHandler<ClassicFrontendSourceArtifacts, ClassicFrontendAnalysisHandler>()
 
 

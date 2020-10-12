@@ -5,25 +5,20 @@
 
 package org.jetbrains.kotlin.test.model
 
-sealed class AnalysisHandler<in I, in S> {
-    abstract fun processModule(module: TestModule, info: I, state: S)
+sealed class AnalysisHandler<in I> {
+    abstract fun processModule(module: TestModule, info: I)
 }
 
-abstract class FrontendResultsHandler<in R : ResultingArtifact.Source, in S> : AnalysisHandler<R, S>()
-abstract class BackendInitialInfoHandler<in I : ResultingArtifact.BackendInputInfo, in S> : AnalysisHandler<I, S>()
-abstract class ArtifactsResultsHandler<in A : ResultingArtifact, in S> : AnalysisHandler<A, S>()
+abstract class FrontendResultsHandler<in R : ResultingArtifact.Source> : AnalysisHandler<R>()
+abstract class BackendInitialInfoHandler<in I : ResultingArtifact.BackendInputInfo> : AnalysisHandler<I>()
+abstract class ArtifactsResultsHandler<in A : ResultingArtifact> : AnalysisHandler<A>()
 
-abstract class AllModulesAnalysisHandler<in I, S, H : AnalysisHandler<I, S>> {
+abstract class AllModulesAnalysisHandler<in I, H : AnalysisHandler<I>> {
     protected abstract val moduleHandler: H
-    protected abstract val state: S
 
     fun processModule(module: TestModule, info: I) {
-        moduleHandler.processModule(module, info, state)
+        moduleHandler.processModule(module, info)
     }
 
     abstract fun processAfterAllModules(moduleStructure: TestModuleStructure)
-}
-
-fun <I> AnalysisHandler<I, Nothing?>.processModule(module: TestModule, info: I) {
-    processModule(module, info, null)
 }

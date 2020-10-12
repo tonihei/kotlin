@@ -26,21 +26,21 @@ import java.util.function.Predicate
 
 class DeclarationsDumpHandler(
     private val assertions: Assertions
-) : ClassicFrontendAllModulesAnalysisHandler<MultiModuleInfoDumper>() {
-    override val moduleHandler: ClassicFrontendAnalysisHandler<MultiModuleInfoDumper> = Handler()
+) : ClassicFrontendAllModulesAnalysisHandler() {
+    override val moduleHandler: ClassicFrontendAnalysisHandler = Handler()
 
-    override val state: MultiModuleInfoDumper = MultiModuleInfoDumperImpl()
+    private val dumper: MultiModuleInfoDumper = MultiModuleInfoDumperImpl()
 
     override fun processAfterAllModules(moduleStructure: TestModuleStructure) {
-        val resultDump = state.generateResultingDump()
+        val resultDump = dumper.generateResultingDump()
         val testDataFile = moduleStructure.originalTestDataFiles.first()
         val expectedFileName = testDataFile.nameWithoutExtension + ".txt"
         val expectedFile = testDataFile.parentFile.resolve(expectedFileName)
         assertions.assertEqualsToFile(expectedFile, resultDump)
     }
 
-    private inner class Handler : ClassicFrontendAnalysisHandler<MultiModuleInfoDumper>() {
-        override fun processModule(module: TestModule, info: ClassicFrontendSourceArtifacts, state: MultiModuleInfoDumper) {
+    private inner class Handler : ClassicFrontendAnalysisHandler() {
+        override fun processModule(module: TestModule, info: ClassicFrontendSourceArtifacts) {
             val moduleDescriptor = info.analysisResult.moduleDescriptor
             val comparator = RecursiveDescriptorComparator(createdAffectedPackagesConfiguration(info.psiFiles, moduleDescriptor))
             val packages = info.psiFiles.values.map { it.packageFqName }
@@ -54,7 +54,7 @@ class DeclarationsDumpHandler(
                 packageText.append(actualSerialized)
             }
             val allPackagesText = textByPackage.values.joinToString("\n")
-            state.builderForModule(module).appendLine(allPackagesText)
+            dumper.builderForModule(module).appendLine(allPackagesText)
         }
 
         private fun createdAffectedPackagesConfiguration(
