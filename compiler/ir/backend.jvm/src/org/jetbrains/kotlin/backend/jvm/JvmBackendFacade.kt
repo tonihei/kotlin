@@ -123,7 +123,7 @@ object JvmBackendFacade {
         )
     }
 
-    internal fun doGenerateFilesInternal(
+    fun doGenerateFilesInternal(
         state: GenerationState,
         irModuleFragment: IrModuleFragment,
         symbolTable: SymbolTable,

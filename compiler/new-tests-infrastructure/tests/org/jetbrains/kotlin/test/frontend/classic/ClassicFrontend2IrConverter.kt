@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.test.frontend.classic
 
 import org.jetbrains.kotlin.backend.common.serialization.signature.IdSignatureDescriptor
 import org.jetbrains.kotlin.backend.jvm.JvmGeneratorExtensions
+import org.jetbrains.kotlin.backend.jvm.codegen.DescriptorMetadataSerializer
 import org.jetbrains.kotlin.codegen.JvmBackendClassResolverForModuleWithDependencies
 import org.jetbrains.kotlin.ir.backend.js.lower.serialization.ir.JsManglerDesc
 import org.jetbrains.kotlin.ir.backend.jvm.serialization.JvmManglerDesc
@@ -29,7 +30,7 @@ class ClassicFrontend2IrConverter : Frontend2BackendConverter<ClassicFrontendSou
         frontendResults: ClassicFrontendSourceArtifacts,
         dependencyProvider: DependencyProvider<ClassicFrontendSourceArtifacts>
     ): IrBackendInputInfo {
-        val (psiFiles, analysisResult, project, languageVersionSettings) = frontendResults
+        val (psiFiles, analysisResult, _, languageVersionSettings) = frontendResults
         val psi2ir = Psi2IrTranslator(languageVersionSettings, Psi2IrConfiguration(ignoreErrors = false))
         val (bindingContext, moduleDescriptor, _) = analysisResult
         if (!psi2ir.configuration.ignoreErrors) {
@@ -53,6 +54,13 @@ class ClassicFrontend2IrConverter : Frontend2BackendConverter<ClassicFrontendSou
         val irModuleFragment = psi2ir.generateModuleFragment(context, psiFiles.values, irProviders, emptyList())
         val sourceManager = generationContext.sourceManager
         val jvmBackendClassResolver = JvmBackendClassResolverForModuleWithDependencies(moduleDescriptor)
-        return IrBackendInputInfo(irModuleFragment, symbolTable, sourceManager, jvmBackendClassResolver)
+        return IrBackendInputInfo(
+            irModuleFragment,
+            symbolTable,
+            sourceManager,
+            jvmBackendClassResolver,
+            psiFiles.values,
+            ::DescriptorMetadataSerializer
+        )
     }
 }

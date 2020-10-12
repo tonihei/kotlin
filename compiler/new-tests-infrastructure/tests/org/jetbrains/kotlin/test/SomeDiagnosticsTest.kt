@@ -10,13 +10,12 @@ import com.intellij.testFramework.TestDataPath
 import org.jetbrains.kotlin.test.backend.classic.ClassicBackendInputInfo
 import org.jetbrains.kotlin.test.backend.classic.ClassicJvmBackendFacade
 import org.jetbrains.kotlin.test.backend.handlers.JvmBoxRunner
+import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
+import org.jetbrains.kotlin.test.backend.ir.JvmIrBackendFacade
 import org.jetbrains.kotlin.test.components.*
 import org.jetbrains.kotlin.test.directives.ModuleStructureExtractor
 import org.jetbrains.kotlin.test.directives.SimpleDirectivesContainer
-import org.jetbrains.kotlin.test.frontend.classic.ClassicDependencyProvider
-import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontend2ClassicBackendConverter
-import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendFacade
-import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
+import org.jetbrains.kotlin.test.frontend.classic.*
 import org.jetbrains.kotlin.test.frontend.classic.handlers.DeclarationsDumpHandler
 import org.jetbrains.kotlin.test.frontend.fir.FirDependencyProvider
 import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
@@ -45,6 +44,12 @@ class SomeDiagnosticsTest {
     @TestMetadata("boxTest.kt")
     fun testSimpleClassicBackend() {
         doClassicFrontendTest("compiler/new-tests-infrastructure/testData/boxTest.kt", withBackend = true)
+    }
+
+    @Test
+    @TestMetadata("boxTest.kt")
+    fun testSimpleIrBackend() {
+        doIrBlackBoxTest("compiler/new-tests-infrastructure/testData/boxTest.kt", withBackend = true)
     }
 
     fun doClassicFrontendTest(fileName: String, withBackend: Boolean = false) {
@@ -88,6 +93,49 @@ class SomeDiagnosticsTest {
             backendHandlers.forEach { it.processModule(module, jvm) }
         }
     }
+
+    fun doIrBlackBoxTest(fileName: String, withBackend: Boolean = false) {
+        val components = createComponents()
+        val globalFrontendHandlers = listOf(DeclarationsDumpHandler(components.assertions))
+        val backendHandlers = listOf(JvmBoxRunner(components.assertions))
+        val facade = ClassicFrontendFacade(components)
+
+        val moduleStructure = ModuleStructureExtractor.splitTestDataByModules(
+            testDataFileName = fileName,
+            directivesContainer = SimpleDirectivesContainer.Empty,
+            assertions = components.assertions
+        )
+
+        val dependencyProvider = ClassicDependencyProvider(components, moduleStructure.modules)
+
+        val frontendResults = mutableMapOf<TestModule, ClassicFrontendSourceArtifacts>()
+        for (module in moduleStructure.modules) {
+            val analysisResults = facade.analyze(module, dependencyProvider)
+            frontendResults[module] = analysisResults
+            dependencyProvider.registerAnalyzedModule(module.name, analysisResults)
+            globalFrontendHandlers.forEach { it.processModule(module, analysisResults) }
+        }
+
+        globalFrontendHandlers.forEach { it.processAfterAllModules(moduleStructure) }
+        if (!withBackend) return
+
+        val frontend2BackendConverter = ClassicFrontend2IrConverter()
+        val backendInitialInfos = mutableMapOf<TestModule, IrBackendInputInfo>()
+
+        for ((module, sourceArtifact) in frontendResults) {
+            val backendInfo = frontend2BackendConverter.convert(module, sourceArtifact, dependencyProvider)
+            backendInitialInfos[module] = backendInfo
+        }
+
+        val backendFacade = JvmIrBackendFacade(components)
+        val backendArtifacts = mutableMapOf<TestModule, ResultingArtifact.Binary.Jvm>()
+        for ((module, backendInfo) in backendInitialInfos) {
+            val jvm = backendFacade.produce(module, backendInfo)
+            backendArtifacts[module] = jvm
+            backendHandlers.forEach { it.processModule(module, jvm) }
+        }
+    }
+
 
     fun doFirTest(fileName: String) {
         val components = createComponents()

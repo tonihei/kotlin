@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.test.frontend.fir
 
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendClassResolver
+import org.jetbrains.kotlin.fir.backend.jvm.FirMetadataSerializer
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
 import org.jetbrains.kotlin.test.model.DependencyProvider
 import org.jetbrains.kotlin.test.model.Frontend2BackendConverter
@@ -18,6 +19,14 @@ class Fir2IrResultsConverter : Frontend2BackendConverter<FirSourceArtifact, IrBa
         dependencyProvider: DependencyProvider<FirSourceArtifact>
     ): IrBackendInputInfo {
         val (irModuleFragment, symbolTable, sourceManager, components) = frontendResults.firAnalyzerFacade.convertToIr()
-        return IrBackendInputInfo(irModuleFragment, symbolTable, sourceManager, FirJvmBackendClassResolver(components))
+        return IrBackendInputInfo(
+            irModuleFragment,
+            symbolTable,
+            sourceManager,
+            FirJvmBackendClassResolver(components),
+            frontendResults.firAnalyzerFacade.ktFiles
+        ) { context, irClass, _, serializationBindings, parent ->
+            FirMetadataSerializer(frontendResults.session, context, irClass, serializationBindings, parent)
+        }
     }
 }
