@@ -26,9 +26,7 @@ import java.util.function.Predicate
 
 class DeclarationsDumpHandler(
     private val assertions: Assertions
-) : ClassicFrontendAllModulesAnalysisHandler() {
-    override val moduleHandler: ClassicFrontendAnalysisHandler = Handler()
-
+) : ClassicFrontendAnalysisHandler() {
     private val dumper: MultiModuleInfoDumper = MultiModuleInfoDumperImpl()
 
     override fun processAfterAllModules(moduleStructure: TestModuleStructure) {
@@ -39,45 +37,43 @@ class DeclarationsDumpHandler(
         assertions.assertEqualsToFile(expectedFile, resultDump)
     }
 
-    private inner class Handler : ClassicFrontendAnalysisHandler() {
-        override fun processModule(module: TestModule, info: ClassicFrontendSourceArtifacts) {
-            val moduleDescriptor = info.analysisResult.moduleDescriptor
-            val comparator = RecursiveDescriptorComparator(createdAffectedPackagesConfiguration(info.psiFiles, moduleDescriptor))
-            val packages = info.psiFiles.values.map { it.packageFqName }
-            val textByPackage = packages.keysToMap { StringBuilder() }
+    override fun processModule(module: TestModule, info: ClassicFrontendSourceArtifacts) {
+        val moduleDescriptor = info.analysisResult.moduleDescriptor
+        val comparator = RecursiveDescriptorComparator(createdAffectedPackagesConfiguration(info.psiFiles, moduleDescriptor))
+        val packages = info.psiFiles.values.map { it.packageFqName }
+        val textByPackage = packages.keysToMap { StringBuilder() }
 
-            for ((packageName, packageText) in textByPackage.entries) {
-                val aPackage = moduleDescriptor.getPackage(packageName)
-                assertions.assertFalse(aPackage.isEmpty())
+        for ((packageName, packageText) in textByPackage.entries) {
+            val aPackage = moduleDescriptor.getPackage(packageName)
+            assertions.assertFalse(aPackage.isEmpty())
 
-                val actualSerialized = comparator.serializeRecursively(aPackage)
-                packageText.append(actualSerialized)
-            }
-            val allPackagesText = textByPackage.values.joinToString("\n")
-            dumper.builderForModule(module).appendLine(allPackagesText)
+            val actualSerialized = comparator.serializeRecursively(aPackage)
+            packageText.append(actualSerialized)
         }
+        val allPackagesText = textByPackage.values.joinToString("\n")
+        dumper.builderForModule(module).appendLine(allPackagesText)
+    }
 
-        private fun createdAffectedPackagesConfiguration(
-            psiFiles: Map<TestFile, KtFile>,
-            moduleDescriptor: ModuleDescriptor
-        ): RecursiveDescriptorComparator.Configuration {
-            val packagesNames = psiFiles.values.mapTo(mutableSetOf()) {
-                it.packageFqName.pathSegments().firstOrNull() ?: SpecialNames.ROOT_PACKAGE
-            }
-            val stepIntoFilter = Predicate<DeclarationDescriptor> { descriptor ->
-                val module = DescriptorUtils.getContainingModuleOrNull(descriptor)
-                if (module != moduleDescriptor) return@Predicate false
-
-                if (descriptor is PackageViewDescriptor) {
-                    val fqName = descriptor.fqName
-                    return@Predicate fqName.isRoot || fqName.pathSegments().first() in packagesNames
-                }
-
-                true
-            }
-            return RECURSIVE.filterRecursion(stepIntoFilter)
-                .withValidationStrategy(DescriptorValidator.ValidationVisitor.errorTypesAllowed())
-                .checkFunctionContracts(true)
+    private fun createdAffectedPackagesConfiguration(
+        psiFiles: Map<TestFile, KtFile>,
+        moduleDescriptor: ModuleDescriptor
+    ): RecursiveDescriptorComparator.Configuration {
+        val packagesNames = psiFiles.values.mapTo(mutableSetOf()) {
+            it.packageFqName.pathSegments().firstOrNull() ?: SpecialNames.ROOT_PACKAGE
         }
+        val stepIntoFilter = Predicate<DeclarationDescriptor> { descriptor ->
+            val module = DescriptorUtils.getContainingModuleOrNull(descriptor)
+            if (module != moduleDescriptor) return@Predicate false
+
+            if (descriptor is PackageViewDescriptor) {
+                val fqName = descriptor.fqName
+                return@Predicate fqName.isRoot || fqName.pathSegments().first() in packagesNames
+            }
+
+            true
+        }
+        return RECURSIVE.filterRecursion(stepIntoFilter)
+            .withValidationStrategy(DescriptorValidator.ValidationVisitor.errorTypesAllowed())
+            .checkFunctionContracts(true)
     }
 }

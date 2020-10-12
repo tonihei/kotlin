@@ -6,12 +6,8 @@
 package org.jetbrains.kotlin.test.frontend.classic.handlers
 
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
-import org.jetbrains.kotlin.test.model.AllModulesAnalysisHandler
 import org.jetbrains.kotlin.test.model.FrontendResultsHandler
 
 abstract class ClassicFrontendAnalysisHandler : FrontendResultsHandler<ClassicFrontendSourceArtifacts>()
-
-abstract class ClassicFrontendAllModulesAnalysisHandler :
-    AllModulesAnalysisHandler<ClassicFrontendSourceArtifacts, ClassicFrontendAnalysisHandler>()
 
 

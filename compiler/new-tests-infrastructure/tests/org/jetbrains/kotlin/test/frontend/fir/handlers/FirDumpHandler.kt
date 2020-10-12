@@ -13,9 +13,14 @@ import org.jetbrains.kotlin.test.model.TestModuleStructure
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumper
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumperImpl
 
-class FirDumpHandler(private val assertions: Assertions) : FirAllModulesAnalysisHandler() {
-    override val moduleHandler: FirAnalysisHandler = Handler()
+class FirDumpHandler(private val assertions: Assertions) : FirAnalysisHandler() {
     private val dumper: MultiModuleInfoDumper = MultiModuleInfoDumperImpl()
+
+    override fun processModule(module: TestModule, info: FirSourceArtifact) {
+        val builderForModule = dumper.builderForModule(module)
+        val firFiles = info.firFiles
+        firFiles.values.forEach { builderForModule.append(it.render()) }
+    }
 
     override fun processAfterAllModules(moduleStructure: TestModuleStructure) {
         // TODO: change according to multiple testdata files
@@ -23,13 +28,5 @@ class FirDumpHandler(private val assertions: Assertions) : FirAllModulesAnalysis
         val expectedFile = testDataFile.parentFile.resolve("${testDataFile.nameWithoutExtension}.fir")
         val actualText = dumper.generateResultingDump()
         assertions.assertEqualsToFile("Content is not equal", expectedFile, actualText)
-    }
-
-    private inner class Handler : FirAnalysisHandler() {
-        override fun processModule(module: TestModule, info: FirSourceArtifact) {
-            val builderForModule = dumper.builderForModule(module)
-            val firFiles = info.firFiles
-            firFiles.values.forEach { builderForModule.append(it.render()) }
-        }
     }
 }

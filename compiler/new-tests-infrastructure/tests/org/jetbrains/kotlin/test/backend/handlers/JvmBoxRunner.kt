@@ -13,16 +13,22 @@ import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil.getFileClassInfoNoResolve
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.test.components.Assertions
-import org.jetbrains.kotlin.test.model.ArtifactsResultsHandler
-import org.jetbrains.kotlin.test.model.ResultingArtifact
-import org.jetbrains.kotlin.test.model.TestModule
+import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.lang.reflect.Method
 import java.net.URLClassLoader
 
-class JvmBoxRunner(val assertions: Assertions) : ArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>() {
+class JvmBoxRunner(val assertions: Assertions) : JvmBinaryArtifactsResultsHandler() {
     companion object {
         private val BOX_IN_SEPARATE_PROCESS_PORT = System.getProperty("kotlin.test.box.in.separate.process.port")
+    }
+
+    private var boxMethodFound = false
+
+    override fun processAfterAllModules(moduleStructure: TestModuleStructure) {
+        if (!boxMethodFound) {
+            assertions.fail { "Can't find box methods" }
+        }
     }
 
     override fun processModule(module: TestModule, info: ResultingArtifact.Binary.Jvm) {
@@ -32,10 +38,10 @@ class JvmBoxRunner(val assertions: Assertions) : ArtifactsResultsHandler<Resulti
             val className = ktFile.getFacadeFqName() ?: continue
             val clazz = classLoader.getGeneratedClass(className)
             val method = clazz.getBoxMethodOrNull() ?: continue
+            boxMethodFound = true
             callBoxMethodAndCheckResult(classLoader, clazz, method, unexpectedBehaviour = false)
             return
         }
-        assertions.fail { "Can't find box methods" }
     }
 
     private fun callBoxMethodAndCheckResult(
