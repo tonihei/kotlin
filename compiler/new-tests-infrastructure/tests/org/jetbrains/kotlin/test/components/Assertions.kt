@@ -20,6 +20,7 @@ abstract class Assertions {
 
     abstract fun assertEqualsToFile(message: String, expectedFile: File, actual: String, sanitizer: (String) -> String = { it })
     abstract fun assertEquals(expected: Any?, actual: Any?, message: String = "")
+    abstract fun assertNotEquals(expected: Any?, actual: Any?, message: String = "")
     abstract fun assertTrue(value: Boolean)
     abstract fun assertFalse(value: Boolean)
     abstract fun fail(message: () -> String): Nothing
@@ -48,6 +49,10 @@ object JUnit5Assertions : Assertions() {
 
     override fun assertEquals(expected: Any?, actual: Any?, message: String) {
         Junit5Assertions.assertEquals(expected, actual, message)
+    }
+
+    override fun assertNotEquals(expected: Any?, actual: Any?, message: String) {
+        Junit5Assertions.assertNotEquals(expected, actual, message)
     }
 
     override fun assertTrue(value: Boolean) {
