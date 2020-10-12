@@ -48,6 +48,7 @@ class ClassicFrontendFacade(
         return ClassicFrontendSourceArtifacts(
             ktFilesMap,
             analysisResult,
+            project,
             languageVersionSettings
         )
     }

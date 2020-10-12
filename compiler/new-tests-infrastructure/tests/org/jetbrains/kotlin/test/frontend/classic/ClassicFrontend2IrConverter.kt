@@ -29,7 +29,7 @@ class ClassicFrontend2IrConverter : Frontend2BackendConverter<ClassicFrontendSou
         frontendResults: ClassicFrontendSourceArtifacts,
         dependencyProvider: DependencyProvider<ClassicFrontendSourceArtifacts>
     ): IrBackendInputInfo {
-        val (psiFiles, analysisResult, languageVersionSettings) = frontendResults
+        val (psiFiles, analysisResult, project, languageVersionSettings) = frontendResults
         val psi2ir = Psi2IrTranslator(languageVersionSettings, Psi2IrConfiguration(ignoreErrors = false))
         val (bindingContext, moduleDescriptor, _) = analysisResult
         if (!psi2ir.configuration.ignoreErrors) {

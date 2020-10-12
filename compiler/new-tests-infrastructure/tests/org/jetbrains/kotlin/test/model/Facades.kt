@@ -14,5 +14,5 @@ abstract class Frontend2BackendConverter<R : ResultingArtifact.Source, out I : R
 }
 
 abstract class BackendFacade<in I : ResultingArtifact.BackendInputInfo, out R : ResultingArtifact.Binary> {
-    abstract fun produce(initialInfo: I): R
+    abstract fun produce(module: TestModule, initialInfo: I): R
 }

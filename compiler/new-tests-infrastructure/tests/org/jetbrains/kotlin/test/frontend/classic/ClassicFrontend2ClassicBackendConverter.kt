@@ -16,7 +16,13 @@ class ClassicFrontend2ClassicBackendConverter : Frontend2BackendConverter<Classi
         frontendResults: ClassicFrontendSourceArtifacts,
         dependencyProvider: DependencyProvider<ClassicFrontendSourceArtifacts>
     ): ClassicBackendInputInfo {
-        val (psiFiles, bindingContext, moduleDescriptor, languageVersionSettings) = frontendResults
-        return ClassicBackendInputInfo(psiFiles.values, bindingContext, moduleDescriptor, languageVersionSettings)
+        val (psiFiles, analysisResults, project, languageVersionSettings) = frontendResults
+        return ClassicBackendInputInfo(
+            psiFiles.values,
+            analysisResults.bindingContext,
+            analysisResults.moduleDescriptor,
+            project,
+            languageVersionSettings
+        )
     }
 }

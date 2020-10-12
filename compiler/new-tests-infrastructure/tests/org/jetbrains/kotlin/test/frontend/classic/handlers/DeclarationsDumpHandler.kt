@@ -41,7 +41,7 @@ class DeclarationsDumpHandler(
 
     private inner class Handler : ClassicFrontendAnalysisHandler<MultiModuleInfoDumper>() {
         override fun processModule(module: TestModule, info: ClassicFrontendSourceArtifacts, state: MultiModuleInfoDumper) {
-            val moduleDescriptor = info.moduleDescriptor
+            val moduleDescriptor = info.analysisResult.moduleDescriptor
             val comparator = RecursiveDescriptorComparator(createdAffectedPackagesConfiguration(info.psiFiles, moduleDescriptor))
             val packages = info.psiFiles.values.map { it.packageFqName }
             val textByPackage = packages.keysToMap { StringBuilder() }

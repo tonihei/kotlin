@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.test.frontend.classic
 
+import com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
@@ -16,5 +17,6 @@ import org.jetbrains.kotlin.test.model.TestFile
 data class ClassicFrontendSourceArtifacts(
     val psiFiles: Map<TestFile, KtFile>,
     val analysisResult: AnalysisResult,
+    val project: Project,
     val languageVersionSettings: LanguageVersionSettings
 ) : ResultingArtifact.Source()

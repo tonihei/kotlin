@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.test.model
 
+import org.jetbrains.kotlin.codegen.ClassFileFactory
 import org.jetbrains.kotlin.test.components.Assertions
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
 
@@ -13,7 +14,7 @@ sealed class ResultingArtifact {
     abstract class BackendInputInfo : ResultingArtifact()
     class KLib : ResultingArtifact()
     sealed class Binary : ResultingArtifact() {
-        class Jvm : Binary()
+        class Jvm(val classFileFactory: ClassFileFactory) : Binary()
         class Js : Binary()
         class Native : Binary()
     }
