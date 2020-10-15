@@ -1,0 +1,110 @@
+/*
+ * Copyright 2010-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
+ */
+
+package org.jetbrains.kotlin.test.impl
+
+import com.intellij.openapi.Disposable
+import org.jetbrains.kotlin.test.TestConfiguration
+import org.jetbrains.kotlin.test.components.*
+import org.jetbrains.kotlin.test.builders.Constructor
+import org.jetbrains.kotlin.test.model.*
+import org.jetbrains.kotlin.test.util.TestDisposable
+
+class TestConfigurationImpl(
+    defaultsProvider: DefaultsProvider,
+    assertions: Assertions,
+
+    frontendFacades: List<Constructor<FrontendFacade<*>>>,
+    frontend2BackendConverters: List<Constructor<Frontend2BackendConverter<*, *>>>,
+    backendFacades: List<Constructor<BackendFacade<*, *>>>,
+
+    frontendHandlers: List<Constructor<FrontendResultsHandler<*>>>,
+    backendHandlers: List<Constructor<BackendInitialInfoHandler<*>>>,
+    artifactsHandlers: List<Constructor<ArtifactsResultsHandler<*>>>,
+
+    sourcePreprocessors: List<SourceFilePreprocessor>,
+) : TestConfiguration() {
+    override val rootDisposable: Disposable = TestDisposable()
+
+    override val configurationComponents: ConfigurationComponents = run {
+        val sourceFileProvider = SourceFileProviderImpl(sourcePreprocessors)
+        val kotlinCoreEnvironmentProvider = KotlinCoreEnvironmentProviderImpl(sourceFileProvider, rootDisposable)
+        ConfigurationComponents(kotlinCoreEnvironmentProvider, sourceFileProvider, assertions, defaultsProvider)
+    }
+
+    private val frontendFacades: Map<FrontendKind<*>, FrontendFacade<*>> =
+        frontendFacades
+            .map { it.invoke(configurationComponents) }
+            .groupBy { it.frontendKind }
+            .mapValues { it.value.singleOrNull() ?: manyFacadesError("frontend facades", "source -> ${it.key}") }
+
+    private val frontend2BackendConverters: Map<FrontendKind<*>, Map<BackendKind<*>, Frontend2BackendConverter<*, *>>> =
+        frontend2BackendConverters
+            .map { it.invoke(configurationComponents) }
+            .groupBy { it.frontendKind }
+            .mapValues { (frontendKind, converters) ->
+                converters.groupBy { it.backendKind }.mapValues {
+                    it.value.singleOrNull() ?: manyFacadesError("converters", "$frontendKind -> ${it.key}")
+                }
+            }
+
+    private val backendFacades: Map<BackendKind<*>, Map<ArtifactKind<*>, BackendFacade<*, *>>> = backendFacades
+        .map { it.invoke(configurationComponents) }
+        .groupBy { it.backendKind }
+        .mapValues { (backendKind, facades) ->
+            facades.groupBy { it.artifactKind }.mapValues {
+                it.value.singleOrNull() ?: manyFacadesError("backend facades", "$backendKind -> ${it.key}")
+            }
+        }
+
+    private val frontendHandlers: Map<FrontendKind<*>, List<FrontendResultsHandler<*>>> =
+        frontendHandlers.map { it.invoke(configurationComponents) }.groupBy { it.frontendKind }.withDefault { emptyList() }
+
+    private val backendHandlers: Map<BackendKind<*>, List<BackendInitialInfoHandler<*>>> =
+        backendHandlers.map { it.invoke(configurationComponents) }.groupBy { it.backendKind }.withDefault { emptyList() }
+
+    private val artifactsHandlers: Map<ArtifactKind<*>, List<ArtifactsResultsHandler<*>>> =
+        artifactsHandlers.map { it.invoke(configurationComponents) }.groupBy { it.artifactKind }.withDefault { emptyList() }
+
+    private fun manyFacadesError(name: String, kinds: String): Nothing {
+        error("Too many $name passed for $kinds configuration")
+    }
+
+    override fun <R : ResultingArtifact.Source<R>> getFrontendFacade(frontendKind: FrontendKind<R>): FrontendFacade<R> {
+        @Suppress("UNCHECKED_CAST")
+        return frontendFacades.getValue(frontendKind) as FrontendFacade<R>
+    }
+
+    override fun <R : ResultingArtifact.Source<R>, I : ResultingArtifact.BackendInputInfo<I>> getConverter(
+        frontendKind: FrontendKind<R>,
+        backendKind: BackendKind<I>
+    ): Frontend2BackendConverter<R, I> {
+        @Suppress("UNCHECKED_CAST")
+        return frontend2BackendConverters.getValue(frontendKind).getValue(backendKind) as Frontend2BackendConverter<R, I>
+    }
+
+    override fun <I : ResultingArtifact.BackendInputInfo<I>, A : ResultingArtifact.Binary<A>> getBackendFacade(
+        backendKind: BackendKind<I>,
+        artifactKind: ArtifactKind<A>
+    ): BackendFacade<I, A> {
+        @Suppress("UNCHECKED_CAST")
+        return backendFacades.getValue(backendKind).getValue(artifactKind) as BackendFacade<I, A>
+    }
+
+    override fun <R : ResultingArtifact.Source<R>> getFrontendHandlers(frontendKind: FrontendKind<R>): List<FrontendResultsHandler<R>> {
+        @Suppress("UNCHECKED_CAST")
+        return frontendHandlers.getValue(frontendKind) as List<FrontendResultsHandler<R>>
+    }
+
+    override fun <I : ResultingArtifact.BackendInputInfo<I>> getBackendHandlers(backendKind: BackendKind<I>): List<BackendInitialInfoHandler<I>> {
+        @Suppress("UNCHECKED_CAST")
+        return backendHandlers.getValue(backendKind) as List<BackendInitialInfoHandler<I>>
+    }
+
+    override fun <A : ResultingArtifact.Binary<A>> getArtifactHandlers(artifactKind: ArtifactKind<A>): List<ArtifactsResultsHandler<A>> {
+        @Suppress("UNCHECKED_CAST")
+        return artifactsHandlers.getValue(artifactKind) as List<ArtifactsResultsHandler<A>>
+    }
+}

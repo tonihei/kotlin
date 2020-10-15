@@ -20,7 +20,7 @@ data class ClassicFrontendSourceArtifacts(
     val analysisResult: AnalysisResult,
     val project: Project,
     val languageVersionSettings: LanguageVersionSettings
-) : ResultingArtifact.Source() {
-    override val frontendKind: FrontendKind
+) : ResultingArtifact.Source<ClassicFrontendSourceArtifacts>() {
+    override val frontendKind: FrontendKind.ClassicFrontend
         get() = FrontendKind.ClassicFrontend
 }

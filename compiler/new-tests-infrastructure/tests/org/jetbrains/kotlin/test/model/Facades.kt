@@ -7,25 +7,25 @@ package org.jetbrains.kotlin.test.model
 
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
 
-abstract class FrontendFacade<R : ResultingArtifact.Source, in P : DependencyProvider<R>>(
+abstract class FrontendFacade<R : ResultingArtifact.Source<R>>(
     val configurationComponents: ConfigurationComponents,
-    val frontendKind: FrontendKind
+    val frontendKind: FrontendKind<R>
 ) {
-    abstract fun analyze(module: TestModule, dependencyProvider: P): R
+    abstract fun analyze(module: TestModule): R
 }
 
-abstract class Frontend2BackendConverter<R : ResultingArtifact.Source, out I : ResultingArtifact.BackendInputInfo>(
+abstract class Frontend2BackendConverter<R : ResultingArtifact.Source<R>, I : ResultingArtifact.BackendInputInfo<I>>(
     val configurationComponents: ConfigurationComponents,
-    val frontendKind: FrontendKind,
-    val backendKind: BackendKind
+    val frontendKind: FrontendKind<R>,
+    val backendKind: BackendKind<I>
 ) {
     abstract fun convert(module: TestModule, frontendResults: R, dependencyProvider: DependencyProvider<R>): I
 }
 
-abstract class BackendFacade<in I : ResultingArtifact.BackendInputInfo, out R : ResultingArtifact.Binary>(
+abstract class BackendFacade<I : ResultingArtifact.BackendInputInfo<I>, A : ResultingArtifact.Binary<A>>(
     val configurationComponents: ConfigurationComponents,
-    val backendKind: BackendKind,
-    val artifactKind: ArtifactKind
+    val backendKind: BackendKind<I>,
+    val artifactKind: ArtifactKind<A>
 ) {
-    abstract fun produce(module: TestModule, initialInfo: I): R
+    abstract fun produce(module: TestModule, initialInfo: I): A
 }

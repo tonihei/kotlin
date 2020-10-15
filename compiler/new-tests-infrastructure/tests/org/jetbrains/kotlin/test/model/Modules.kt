@@ -29,8 +29,8 @@ data class TestModuleStructure(
 data class TestModule(
     val name: String,
     val targetPlatform: TargetPlatform,
-    val frontendKind: FrontendKind,
-    val targetBackend: BackendKind,
+    val frontendKind: FrontendKind<*>,
+    val targetBackend: BackendKind<*>,
     val files: List<TestFile>,
     val dependencies: List<DependencyDescription>,
     val directives: RegisteredDirectives,
@@ -74,15 +74,3 @@ data class DependencyDescription(
     val kind: DependencyKind,
     val relation: DependencyRelation
 )
-
-enum class FrontendKind {
-    ClassicFrontend, FIR
-}
-
-enum class BackendKind {
-    ClassicBackend, IrBackend
-}
-
-enum class ArtifactKind {
-    Jvm, Js, Native, KLib
-}

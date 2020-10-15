@@ -17,19 +17,19 @@ sealed class AnalysisHandler<in I>(val configurationComponents: ConfigurationCom
     abstract fun processAfterAllModules(moduleStructure: TestModuleStructure)
 }
 
-abstract class FrontendResultsHandler<in R : ResultingArtifact.Source>(
+abstract class FrontendResultsHandler<R : ResultingArtifact.Source<R>>(
     configurationComponents: ConfigurationComponents,
-    val frontendKind: FrontendKind
+    val frontendKind: FrontendKind<R>
 ) : AnalysisHandler<R>(configurationComponents)
 
-abstract class BackendInitialInfoHandler<in I : ResultingArtifact.BackendInputInfo>(
+abstract class BackendInitialInfoHandler<I : ResultingArtifact.BackendInputInfo<I>>(
     configurationComponents: ConfigurationComponents,
-    val backendKind: BackendKind
+    val backendKind: BackendKind<I>
 ) : AnalysisHandler<I>(configurationComponents)
 
-abstract class ArtifactsResultsHandler<in A : ResultingArtifact>(
+abstract class ArtifactsResultsHandler<A : ResultingArtifact.Binary<A>>(
     configurationComponents: ConfigurationComponents,
-    val artifactKind: ArtifactKind
+    val artifactKind: ArtifactKind<A>
 ) : AnalysisHandler<A>(configurationComponents)
 
 abstract class JvmBinaryArtifactsResultsHandler(

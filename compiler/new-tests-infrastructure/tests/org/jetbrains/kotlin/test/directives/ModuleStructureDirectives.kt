@@ -43,7 +43,7 @@ object ModuleStructureDirectives : SimpleDirectivesContainer() {
         """.trimIndent()
     )
 
-    val targetFrontend = enumDirective<FrontendKind>(
+    val targetFrontend = valueDirective(
         name = "TARGET_FRONTEND",
         """
             Usage: // TARGET_FRONTEND: {Frontend}
@@ -51,7 +51,7 @@ object ModuleStructureDirectives : SimpleDirectivesContainer() {
         """.trimIndent()
     )
 
-    val targetBackend = enumDirective<BackendKind>(
+    val targetBackend = valueDirective(
         name = "TARGET_BACKEND",
         """
             Usage: // TARGET_BACKEND: {Backend}

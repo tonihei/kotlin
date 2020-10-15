@@ -19,8 +19,10 @@ import org.jetbrains.kotlin.test.model.TestModule
 
 class ClassicFrontendFacade(
     configurationComponents: ConfigurationComponents
-) : FrontendFacade<ClassicFrontendSourceArtifacts, ClassicDependencyProvider>(configurationComponents, FrontendKind.ClassicFrontend) {
-    override fun analyze(module: TestModule, dependencyProvider: ClassicDependencyProvider): ClassicFrontendSourceArtifacts {
+) : FrontendFacade<ClassicFrontendSourceArtifacts>(configurationComponents, FrontendKind.ClassicFrontend) {
+    val dependencyProvider: ClassicDependencyProvider = null!!
+
+    override fun analyze(module: TestModule): ClassicFrontendSourceArtifacts {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val project = environment.project
 

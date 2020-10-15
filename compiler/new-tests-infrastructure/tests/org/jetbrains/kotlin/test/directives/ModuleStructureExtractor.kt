@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.test.directives
 
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.test.components.*
+import org.jetbrains.kotlin.test.builders.LanguageVersionSettingsBuilder
 import org.jetbrains.kotlin.test.model.*
 import java.io.File
 
@@ -45,8 +46,8 @@ class ModuleStructureExtractor private constructor(
 
     private var currentModuleName: String? = null
     private var currentModuleTargetPlatform: TargetPlatform? = null
-    private var currentModuleFrontendKind: FrontendKind? = null
-    private var currentModuleBackendKind: BackendKind? = null
+    private var currentModuleFrontendKind: FrontendKind<*>? = null
+    private var currentModuleBackendKind: BackendKind<*>? = null
     private var currentModuleLanguageVersionSettingsBuilder: LanguageVersionSettingsBuilder = initLanguageSettingsBuilder()
     private var dependenciesOfCurrentModule = mutableListOf<DependencyDescription>()
     private var filesOfCurrentModule = mutableListOf<TestFile>()
@@ -111,13 +112,19 @@ class ModuleStructureExtractor private constructor(
                 dependenciesOfCurrentModule.add(DependencyDescription(name, kind, relation))
             }
             ModuleStructureDirectives.targetFrontend -> {
-                currentModuleFrontendKind = values.singleOrNull() as FrontendKind? ?: assertions.fail {
+                val name = values.singleOrNull() as? String? ?: assertions.fail {
                     "Target frontend specified incorrectly\nUsage: ${directive.description}"
+                }
+                currentModuleFrontendKind = FrontendKind.fromString(name) ?: assertions.fail {
+                    "Unknown frontend: $name"
                 }
             }
             ModuleStructureDirectives.targetBackend -> {
-                currentModuleBackendKind = values.singleOrNull() as BackendKind? ?: assertions.fail {
+                val name = values.singleOrNull() as? String ?: assertions.fail {
                     "Target backend specified incorrectly\nUsage: ${directive.description}"
+                }
+                currentModuleBackendKind = BackendKind.fromString(name) ?: assertions.fail {
+                    "Unknown backend: $name"
                 }
             }
             ModuleStructureDirectives.file -> {

@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.test.model.BackendFacade
 import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
-abstract class ClassicBackendFacade<R : ResultingArtifact.Binary>(
+abstract class ClassicBackendFacade<A : ResultingArtifact.Binary<A>>(
     configurationComponents: ConfigurationComponents,
-    artifactKind: ArtifactKind
-) : BackendFacade<ClassicBackendInputInfo, R>(configurationComponents, BackendKind.ClassicBackend, artifactKind)
+    artifactKind: ArtifactKind<A>
+) : BackendFacade<ClassicBackendInputInfo, A>(configurationComponents, BackendKind.ClassicBackend, artifactKind)

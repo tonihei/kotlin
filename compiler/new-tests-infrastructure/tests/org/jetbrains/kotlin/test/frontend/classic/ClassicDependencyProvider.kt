@@ -27,11 +27,11 @@ class ClassicDependencyProvider(
         moduleDescriptorByModule[testModule] = moduleDescriptor
     }
 
-    override fun getBinaryDependency(name: String): ResultingArtifact.Binary? {
+    override fun getBinaryDependency(name: String): ResultingArtifact.Binary<*>? {
         TODO("Not yet implemented")
     }
 
-    override fun registerCompiledBinary(name: String, artifact: ResultingArtifact.Binary) {
+    override fun registerCompiledBinary(name: String, artifact: ResultingArtifact.Binary<*>) {
         TODO("Not yet implemented")
     }
 }

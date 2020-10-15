@@ -21,8 +21,10 @@ import org.jetbrains.kotlin.test.model.*
 
 class FirFrontendFacade(
     configurationComponents: ConfigurationComponents
-) : FrontendFacade<FirSourceArtifact, FirDependencyProvider>(configurationComponents, FrontendKind.FIR) {
-    override fun analyze(module: TestModule, dependencyProvider: FirDependencyProvider): FirSourceArtifact {
+) : FrontendFacade<FirSourceArtifact>(configurationComponents, FrontendKind.FIR) {
+    private val dependencyProvider: FirDependencyProvider = null!!
+
+    override fun analyze(module: TestModule): FirSourceArtifact {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         // TODO: add configurable parser
 

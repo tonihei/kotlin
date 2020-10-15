@@ -6,43 +6,97 @@
 package org.jetbrains.kotlin.test.model
 
 import org.jetbrains.kotlin.codegen.ClassFileFactory
+import org.jetbrains.kotlin.test.backend.classic.ClassicBackendInputInfo
+import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
 import org.jetbrains.kotlin.test.components.Assertions
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
+import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 
 sealed class ResultingArtifact {
-    abstract class Source : ResultingArtifact() {
-        abstract val frontendKind: FrontendKind
+    abstract class Source<R : Source<R>> : ResultingArtifact() {
+        abstract val frontendKind: FrontendKind<R>
     }
 
-    abstract class BackendInputInfo : ResultingArtifact() {
-        abstract val backendKind: BackendKind
+    abstract class BackendInputInfo<I : BackendInputInfo<I>> : ResultingArtifact() {
+        abstract val backendKind: BackendKind<I>
     }
-    sealed class Binary : ResultingArtifact() {
-        class Jvm(val classFileFactory: ClassFileFactory) : Binary() {
-            override val artifactKind: ArtifactKind
+
+    sealed class Binary<A : Binary<A>> : ResultingArtifact() {
+        class Jvm(val classFileFactory: ClassFileFactory) : Binary<Jvm>() {
+            override val artifactKind: ArtifactKind<Jvm>
                 get() = ArtifactKind.Jvm
         }
 
-        class Js : Binary() {
-            override val artifactKind: ArtifactKind
+        class Js : Binary<Js>() {
+            override val artifactKind: ArtifactKind<Js>
                 get() = ArtifactKind.Js
         }
 
-        class Native : Binary() {
-            override val artifactKind: ArtifactKind
+        class Native : Binary<Native>() {
+            override val artifactKind: ArtifactKind<Native>
                 get() = ArtifactKind.Native
         }
 
-        class KLib : Binary() {
-            override val artifactKind: ArtifactKind
+        class KLib : Binary<KLib>() {
+            override val artifactKind: ArtifactKind<KLib>
                 get() = ArtifactKind.KLib
         }
 
-        abstract val artifactKind: ArtifactKind
+        abstract val artifactKind: ArtifactKind<A>
     }
 }
 
-abstract class DependencyProvider<R : ResultingArtifact.Source>(
+sealed class FrontendKind<R : ResultingArtifact.Source<R>> {
+    object ClassicFrontend : FrontendKind<ClassicFrontendSourceArtifacts>()
+    object FIR : FrontendKind<FirSourceArtifact>()
+
+    companion object {
+        fun fromString(string: String): FrontendKind<*>? {
+            return when (string) {
+                "ClassicFrontend" -> ClassicFrontend
+                "FIR" -> FIR
+                else -> null
+            }
+        }
+    }
+}
+
+sealed class BackendKind<I : ResultingArtifact.BackendInputInfo<I>> {
+    object ClassicBackend : BackendKind<ClassicBackendInputInfo>()
+    object IrBackend : BackendKind<IrBackendInputInfo>()
+
+    companion object {
+        fun fromString(string: String): BackendKind<*>? {
+            return when (string) {
+                "ClassicBackend" -> ClassicBackend
+                "IrBackend" -> IrBackend
+                else -> null
+            }
+        }
+    }
+}
+
+sealed class ArtifactKind<A : ResultingArtifact.Binary<A>> {
+    object Jvm : ArtifactKind<ResultingArtifact.Binary.Jvm>()
+    object Js : ArtifactKind<ResultingArtifact.Binary.Js>()
+    object Native : ArtifactKind<ResultingArtifact.Binary.Native>()
+    object KLib : ArtifactKind<ResultingArtifact.Binary.KLib>()
+
+    companion object {
+        fun fromString(string: String): ArtifactKind<*>? {
+            return when (string) {
+                "Jvm" -> Jvm
+                "Js" -> Js
+                "Native" -> Native
+                "KLib" -> KLib
+                else -> null
+            }
+        }
+    }
+}
+
+abstract class DependencyProvider<R : ResultingArtifact.Source<R>>(
     val configurationComponents: ConfigurationComponents,
     testModules: List<TestModule>
 ) {
@@ -60,7 +114,7 @@ abstract class DependencyProvider<R : ResultingArtifact.Source>(
         return analyzedModules[name]
     }
 
-    abstract fun getBinaryDependency(name: String): ResultingArtifact.Binary?
+    abstract fun getBinaryDependency(name: String): ResultingArtifact.Binary<*>?
 
     fun registerAnalyzedModule(name: String, results: R) {
         if (name in analyzedModules) {
@@ -69,5 +123,5 @@ abstract class DependencyProvider<R : ResultingArtifact.Source>(
         analyzedModules[name] = results
     }
 
-    abstract fun registerCompiledBinary(name: String, artifact: ResultingArtifact.Binary)
+    abstract fun registerCompiledBinary(name: String, artifact: ResultingArtifact.Binary<*>)
 }

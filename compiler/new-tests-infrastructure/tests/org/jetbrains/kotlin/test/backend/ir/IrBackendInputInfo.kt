@@ -22,7 +22,7 @@ data class IrBackendInputInfo(
     val jvmBackendClassResolver: JvmBackendClassResolver,
     val ktFiles: Collection<KtFile>,
     val serializerFactory: MetadataSerializerFactory
-) : ResultingArtifact.BackendInputInfo() {
-    override val backendKind: BackendKind
+) : ResultingArtifact.BackendInputInfo<IrBackendInputInfo>() {
+    override val backendKind: BackendKind.IrBackend
         get() = BackendKind.IrBackend
 }

@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.test.model.BackendFacade
 import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
-abstract class IrBackendFacade<out R : ResultingArtifact.Binary>(
+abstract class IrBackendFacade<A : ResultingArtifact.Binary<A>>(
     configurationComponents: ConfigurationComponents,
-    artifactKind: ArtifactKind
-) : BackendFacade<IrBackendInputInfo, R>(configurationComponents, BackendKind.IrBackend, artifactKind)
+    artifactKind: ArtifactKind<A>
+) : BackendFacade<IrBackendInputInfo, A>(configurationComponents, BackendKind.IrBackend, artifactKind)

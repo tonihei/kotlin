@@ -5,9 +5,9 @@
 
 package org.jetbrains.kotlin.test.components
 
-import org.jetbrains.kotlin.config.*
-import org.jetbrains.kotlin.fir.PrivateForInline
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.platform.TargetPlatform
+import org.jetbrains.kotlin.test.builders.LanguageVersionSettingsBuilder
 import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.DependencyKind
 import org.jetbrains.kotlin.test.model.FrontendKind
@@ -18,8 +18,8 @@ import org.jetbrains.kotlin.test.model.FrontendKind
  *   - default libraries
  */
 class DefaultsProvider(
-    val defaultBackend: BackendKind,
-    val defaultFrontend: FrontendKind,
+    val defaultBackend: BackendKind<*>,
+    val defaultFrontend: FrontendKind<*>,
     val defaultLanguageSettings: LanguageVersionSettings,
     private val defaultLanguageSettingsBuilder: LanguageVersionSettingsBuilder,
     val defaultPlatform: TargetPlatform,
@@ -30,74 +30,6 @@ class DefaultsProvider(
     }
 }
 
-@DefaultsDsl
-class LanguageVersionSettingsBuilder {
-    companion object {
-        fun fromExistingSettings(builder: LanguageVersionSettingsBuilder): LanguageVersionSettingsBuilder {
-            return LanguageVersionSettingsBuilder().apply {
-                languageVersion = builder.languageVersion
-                apiVersion = builder.apiVersion
-                specificFeatures += builder.specificFeatures
-                analysisFlags += builder.analysisFlags
-            }
-        }
-    }
-
-    var languageVersion: LanguageVersion = LanguageVersion.LATEST_STABLE
-    var apiVersion: ApiVersion = ApiVersion.LATEST_STABLE
-
-    private val specificFeatures: MutableMap<LanguageFeature, LanguageFeature.State> = mutableMapOf()
-    private val analysisFlags: MutableMap<AnalysisFlag<*>, Any?> = mutableMapOf()
-
-    fun enable(feature: LanguageFeature) {
-        specificFeatures[feature] = LanguageFeature.State.ENABLED
-    }
-
-    fun disable(feature: LanguageFeature) {
-        specificFeatures[feature] = LanguageFeature.State.DISABLED
-    }
-
-    fun <T> withFlag(flag: AnalysisFlag<T>, value: T) {
-        analysisFlags[flag] = value
-    }
-
-    fun build(): LanguageVersionSettings {
-        return LanguageVersionSettingsImpl(languageVersion, apiVersion, analysisFlags, specificFeatures)
-    }
-}
-
 @DslMarker
 annotation class DefaultsDsl
 
-@DefaultsDsl
-class DefaultsProviderBuilder {
-    lateinit var backend: BackendKind
-    lateinit var frontend: FrontendKind
-    lateinit var targetPlatform: TargetPlatform
-    lateinit var dependencyKind: DependencyKind
-
-    @PrivateForInline
-    var languageVersionSettings: LanguageVersionSettings? = null
-
-    @PrivateForInline
-    var languageVersionSettingsBuilder: LanguageVersionSettingsBuilder? = null
-
-    @OptIn(PrivateForInline::class)
-    inline fun languageSettings(init: LanguageVersionSettingsBuilder.() -> Unit) {
-        languageVersionSettings = LanguageVersionSettingsBuilder().apply(init).also {
-            languageVersionSettingsBuilder = it
-        }.build()
-    }
-
-    @OptIn(PrivateForInline::class)
-    fun build(): DefaultsProvider {
-        return DefaultsProvider(
-            backend,
-            frontend,
-            languageVersionSettings ?: LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE),
-            languageVersionSettingsBuilder ?: LanguageVersionSettingsBuilder(),
-            targetPlatform,
-            dependencyKind
-        )
-    }
-}
