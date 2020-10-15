@@ -32,13 +32,43 @@ class TestConfiguration(
         ConfigurationComponents(kotlinCoreEnvironmentProvider, sourceFileProvider, assertions, defaultsProvider)
     }
 
-    val frontendFacades: List<FrontendFacade<*, *>> = frontendFacades.map { it.invoke(configurationComponents) }
-    val frontend2BackendConverters: List<Frontend2BackendConverter<*, *>> = frontend2BackendConverters.map { it.invoke(configurationComponents) }
-    val backendFacades: List<BackendFacade<*, *>> = backendFacades.map { it.invoke(configurationComponents) }
+    val frontendFacades: Map<FrontendKind, FrontendFacade<*, *>> =
+        frontendFacades
+            .map { it.invoke(configurationComponents) }
+            .groupBy { it.frontendKind }
+            .mapValues { it.value.singleOrNull() ?: manyFacadesError("frontend facades", "source -> ${it.key}") }
 
-    val frontendHandlers: List<FrontendResultsHandler<*>> = frontendHandlers.map { it.invoke(configurationComponents) }
-    val backendHandlers: List<BackendInitialInfoHandler<*>> = backendHandlers.map { it.invoke(configurationComponents) }
-    val artifactsHandlers: List<ArtifactsResultsHandler<*>> = artifactsHandlers.map { it.invoke(configurationComponents) }
+    val frontend2BackendConverters: Map<FrontendKind, Map<BackendKind, Frontend2BackendConverter<*, *>>> =
+        frontend2BackendConverters
+            .map { it.invoke(configurationComponents) }
+            .groupBy { it.frontendKind }
+            .mapValues { (frontendKind, converters) ->
+                converters.groupBy { it.backendKind }.mapValues {
+                    it.value.singleOrNull() ?: manyFacadesError("converters", "$frontendKind -> ${it.key}")
+                }
+            }
+
+    val backendFacades: Map<BackendKind, Map<ArtifactKind, BackendFacade<*, *>>> = backendFacades
+        .map { it.invoke(configurationComponents) }
+        .groupBy { it.backendKind }
+        .mapValues { (backendKind, facades) ->
+            facades.groupBy { it.artifactKind }.mapValues {
+                it.value.singleOrNull() ?: manyFacadesError("backend facades", "$backendKind -> ${it.key}")
+            }
+        }
+
+    val frontendHandlers: Map<FrontendKind, List<FrontendResultsHandler<*>>> =
+        frontendHandlers.map { it.invoke(configurationComponents) }.groupBy { it.frontendKind }
+
+    val backendHandlers: Map<BackendKind, List<BackendInitialInfoHandler<*>>> =
+        backendHandlers.map { it.invoke(configurationComponents) }.groupBy { it.backendKind }
+
+    val artifactsHandlers: Map<ArtifactKind, List<ArtifactsResultsHandler<*>>> =
+        artifactsHandlers.map { it.invoke(configurationComponents) }.groupBy { it.artifactKind }
+
+    private fun manyFacadesError(name: String, kinds: String): Nothing {
+        error("Too many $name passed for $kinds configuration")
+    }
 }
 
 typealias Constructor<T> = (ConfigurationComponents) -> T
