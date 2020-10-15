@@ -17,15 +17,15 @@ import org.jetbrains.kotlin.test.model.FrontendFacade
 import org.jetbrains.kotlin.test.model.TestModule
 
 class ClassicFrontendFacade(
-    val configurationComponents: ConfigurationComponents
-) : FrontendFacade<ClassicFrontendSourceArtifacts, ClassicDependencyProvider>() {
+    configurationComponents: ConfigurationComponents
+) : FrontendFacade<ClassicFrontendSourceArtifacts, ClassicDependencyProvider>(configurationComponents) {
     override fun analyze(module: TestModule, dependencyProvider: ClassicDependencyProvider): ClassicFrontendSourceArtifacts {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val project = environment.project
 
         val ktFilesMap = configurationComponents.sourceFileProvider.getKtFilesForSourceFiles(module.files, project)
         val ktFiles = ktFilesMap.values
-        val languageVersionSettings = configurationComponents.languageVersionSettingsProvider.extractSettingsFromDirectives(module)
+        val languageVersionSettings = module.languageVersionSettings
 
         val dependentDescriptors = module.dependencies.filter { it.kind == DependencyKind.Source }.map {
             val testModule = dependencyProvider.getTestModule(it.moduleName)

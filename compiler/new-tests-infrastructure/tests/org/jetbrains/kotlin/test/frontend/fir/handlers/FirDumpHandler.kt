@@ -7,13 +7,16 @@ package org.jetbrains.kotlin.test.frontend.fir.handlers
 
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.test.components.Assertions
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.model.TestModuleStructure
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumper
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumperImpl
 
-class FirDumpHandler(private val assertions: Assertions) : FirAnalysisHandler() {
+class FirDumpHandler(
+    configurationComponents: ConfigurationComponents
+) : FirAnalysisHandler(configurationComponents) {
     private val dumper: MultiModuleInfoDumper = MultiModuleInfoDumperImpl()
 
     override fun processModule(module: TestModule, info: FirSourceArtifact) {

@@ -20,11 +20,14 @@ import org.jetbrains.kotlin.psi2ir.Psi2IrConfiguration
 import org.jetbrains.kotlin.psi2ir.Psi2IrTranslator
 import org.jetbrains.kotlin.resolve.AnalyzingUtils
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.model.DependencyProvider
 import org.jetbrains.kotlin.test.model.Frontend2BackendConverter
 import org.jetbrains.kotlin.test.model.TestModule
 
-class ClassicFrontend2IrConverter : Frontend2BackendConverter<ClassicFrontendSourceArtifacts, IrBackendInputInfo>() {
+class ClassicFrontend2IrConverter(
+    configurationComponents: ConfigurationComponents
+) : Frontend2BackendConverter<ClassicFrontendSourceArtifacts, IrBackendInputInfo>(configurationComponents) {
     override fun convert(
         module: TestModule,
         frontendResults: ClassicFrontendSourceArtifacts,

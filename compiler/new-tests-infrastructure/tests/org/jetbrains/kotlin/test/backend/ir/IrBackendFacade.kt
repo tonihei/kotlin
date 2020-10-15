@@ -5,7 +5,10 @@
 
 package org.jetbrains.kotlin.test.backend.ir
 
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.model.BackendFacade
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
-abstract class IrBackendFacade<out R : ResultingArtifact.Binary> : BackendFacade<IrBackendInputInfo, R>()
+abstract class IrBackendFacade<out R : ResultingArtifact.Binary>(
+    configurationComponents: ConfigurationComponents
+) : BackendFacade<IrBackendInputInfo, R>(configurationComponents)

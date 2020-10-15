@@ -22,9 +22,50 @@ class DefaultsProvider(
     val defaultBackend: TargetBackend,
     val defaultFrontend: TargetFrontend,
     val defaultLanguageSettings: LanguageVersionSettings,
+    private val defaultLanguageSettingsBuilder: LanguageVersionSettingsBuilder,
     val defaultPlatform: TargetPlatform,
     val defaultDependencyKind: DependencyKind
-)
+) {
+    fun newLanguageSettingsBuilder(): LanguageVersionSettingsBuilder {
+        return LanguageVersionSettingsBuilder.fromExistingSettings(defaultLanguageSettingsBuilder)
+    }
+}
+
+@DefaultsDsl
+class LanguageVersionSettingsBuilder {
+    companion object {
+        fun fromExistingSettings(builder: LanguageVersionSettingsBuilder): LanguageVersionSettingsBuilder {
+            return LanguageVersionSettingsBuilder().apply {
+                languageVersion = builder.languageVersion
+                apiVersion = builder.apiVersion
+                specificFeatures += builder.specificFeatures
+                analysisFlags += builder.analysisFlags
+            }
+        }
+    }
+
+    var languageVersion: LanguageVersion = LanguageVersion.LATEST_STABLE
+    var apiVersion: ApiVersion = ApiVersion.LATEST_STABLE
+
+    private val specificFeatures: MutableMap<LanguageFeature, LanguageFeature.State> = mutableMapOf()
+    private val analysisFlags: MutableMap<AnalysisFlag<*>, Any?> = mutableMapOf()
+
+    fun enable(feature: LanguageFeature) {
+        specificFeatures[feature] = LanguageFeature.State.ENABLED
+    }
+
+    fun disable(feature: LanguageFeature) {
+        specificFeatures[feature] = LanguageFeature.State.DISABLED
+    }
+
+    fun <T> withFlag(flag: AnalysisFlag<T>, value: T) {
+        analysisFlags[flag] = value
+    }
+
+    fun build(): LanguageVersionSettings {
+        return LanguageVersionSettingsImpl(languageVersion, apiVersion, analysisFlags, specificFeatures)
+    }
+}
 
 @DslMarker
 annotation class DefaultsDsl
@@ -39,34 +80,14 @@ class DefaultsProviderBuilder {
     @PrivateForInline
     var languageVersionSettings: LanguageVersionSettings? = null
 
-    @DefaultsDsl
-    class LanguageVersionSettingsBuilder {
-        var languageVersion: LanguageVersion = LanguageVersion.LATEST_STABLE
-        var apiVersion: ApiVersion = ApiVersion.LATEST_STABLE
-
-        private val specificFeatures = mutableMapOf<LanguageFeature, LanguageFeature.State>()
-        private val analysisFlags = mutableMapOf<AnalysisFlag<*>, Any?>()
-
-        fun enable(feature: LanguageFeature) {
-            specificFeatures[feature] = LanguageFeature.State.ENABLED
-        }
-
-        fun disable(feature: LanguageFeature) {
-            specificFeatures[feature] = LanguageFeature.State.DISABLED
-        }
-
-        fun <T> withFlag(flag: AnalysisFlag<T>, value: T) {
-            analysisFlags[flag] = value
-        }
-
-        fun build(): LanguageVersionSettings {
-            return LanguageVersionSettingsImpl(languageVersion, apiVersion, analysisFlags, specificFeatures)
-        }
-    }
+    @PrivateForInline
+    var languageVersionSettingsBuilder: LanguageVersionSettingsBuilder? = null
 
     @OptIn(PrivateForInline::class)
     inline fun languageSettings(init: LanguageVersionSettingsBuilder.() -> Unit) {
-        languageVersionSettings = LanguageVersionSettingsBuilder().apply(init).build()
+        languageVersionSettings = LanguageVersionSettingsBuilder().apply(init).also {
+            languageVersionSettingsBuilder = it
+        }.build()
     }
 
     @OptIn(PrivateForInline::class)
@@ -75,27 +96,9 @@ class DefaultsProviderBuilder {
             backend,
             frontend,
             languageVersionSettings ?: LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE),
+            languageVersionSettingsBuilder ?: LanguageVersionSettingsBuilder(),
             targetPlatform,
             dependencyKind
         )
-    }
-}
-
-inline fun globalDefaults(init: DefaultsProviderBuilder.() -> Unit): DefaultsProvider {
-    return DefaultsProviderBuilder().apply(init).build()
-}
-
-fun test() {
-    globalDefaults {
-        languageSettings {
-            languageVersion = LanguageVersion.LATEST_STABLE
-            apiVersion = ApiVersion.LATEST_STABLE
-            enable(LanguageFeature.TrailingCommas)
-            disable(LanguageFeature.NewInference)
-        }
-
-        targetPlatform = JvmPlatforms.defaultJvmPlatform
-        frontend = TargetFrontend.ClassicFrontend
-        backend = TargetBackend.JVM_IR
     }
 }

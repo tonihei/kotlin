@@ -20,8 +20,8 @@ import org.jetbrains.kotlin.test.components.getKtFilesForSourceFiles
 import org.jetbrains.kotlin.test.model.*
 
 class FirFrontendFacade(
-    val configurationComponents: ConfigurationComponents
-) : FrontendFacade<FirSourceArtifact, FirDependencyProvider>() {
+    configurationComponents: ConfigurationComponents
+) : FrontendFacade<FirSourceArtifact, FirDependencyProvider>(configurationComponents) {
     override fun analyze(module: TestModule, dependencyProvider: FirDependencyProvider): FirSourceArtifact {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         // TODO: add configurable parser
@@ -34,7 +34,7 @@ class FirFrontendFacade(
 
         val sessionProvider = dependencyProvider.firSessionProvider
 
-        val languageVersionSettings = configurationComponents.languageVersionSettingsProvider.extractSettingsFromDirectives(module)
+        val languageVersionSettings = module.languageVersionSettings
         val builtinsModuleInfo = dependencyProvider.builtinsModuleInfoForModule(module)
         createSessionForBuiltins(builtinsModuleInfo, sessionProvider, environment)
         createSessionForBinaryDependencies(module, sessionProvider, environment)

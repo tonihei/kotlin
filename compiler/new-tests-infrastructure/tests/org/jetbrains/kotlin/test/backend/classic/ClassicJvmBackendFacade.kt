@@ -14,8 +14,8 @@ import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
 
 class ClassicJvmBackendFacade(
-    val configurationComponents: ConfigurationComponents
-) : ClassicBackendFacade<ResultingArtifact.Binary.Jvm>() {
+    configurationComponents: ConfigurationComponents
+) : ClassicBackendFacade<ResultingArtifact.Binary.Jvm>(configurationComponents) {
     override fun produce(module: TestModule, initialInfo: ClassicBackendInputInfo): ResultingArtifact.Binary.Jvm {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val compilerConfiguration = environment.configuration

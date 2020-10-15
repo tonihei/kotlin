@@ -5,14 +5,22 @@
 
 package org.jetbrains.kotlin.test.model
 
-abstract class FrontendFacade<R : ResultingArtifact.Source, in P : DependencyProvider<R>> {
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
+
+abstract class FrontendFacade<R : ResultingArtifact.Source, in P : DependencyProvider<R>>(
+    val configurationComponents: ConfigurationComponents
+) {
     abstract fun analyze(module: TestModule, dependencyProvider: P): R
 }
 
-abstract class Frontend2BackendConverter<R : ResultingArtifact.Source, out I : ResultingArtifact.BackendInputInfo> {
+abstract class Frontend2BackendConverter<R : ResultingArtifact.Source, out I : ResultingArtifact.BackendInputInfo>(
+    val configurationComponents: ConfigurationComponents
+) {
     abstract fun convert(module: TestModule, frontendResults: R, dependencyProvider: DependencyProvider<R>): I
 }
 
-abstract class BackendFacade<in I : ResultingArtifact.BackendInputInfo, out R : ResultingArtifact.Binary> {
+abstract class BackendFacade<in I : ResultingArtifact.BackendInputInfo, out R : ResultingArtifact.Binary>(
+    val configurationComponents: ConfigurationComponents
+) {
     abstract fun produce(module: TestModule, initialInfo: I): R
 }

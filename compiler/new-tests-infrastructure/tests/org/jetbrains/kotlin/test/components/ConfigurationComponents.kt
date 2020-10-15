@@ -5,16 +5,9 @@
 
 package org.jetbrains.kotlin.test.components
 
-class ConfigurationComponents {
-    companion object {
-        inline fun build(init: ConfigurationComponents.() -> Unit): ConfigurationComponents {
-            return ConfigurationComponents().apply(init)
-        }
-    }
-
-    lateinit var kotlinCoreEnvironmentProvider: KotlinCoreEnvironmentProvider
-    lateinit var sourceFileProvider: SourceFileProvider
-    lateinit var languageVersionSettingsProvider: LanguageVersionSettingsProvider
-    lateinit var assertions: Assertions
-    lateinit var defaultsProvider: DefaultsProvider
-}
+class ConfigurationComponents(
+    val kotlinCoreEnvironmentProvider: KotlinCoreEnvironmentProvider,
+    val sourceFileProvider: SourceFileProvider,
+    val assertions: Assertions,
+    val defaultsProvider: DefaultsProvider,
+)

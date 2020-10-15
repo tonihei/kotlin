@@ -5,7 +5,10 @@
 
 package org.jetbrains.kotlin.test.frontend.fir.handlers
 
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 import org.jetbrains.kotlin.test.model.FrontendResultsHandler
 
-abstract class FirAnalysisHandler : FrontendResultsHandler<FirSourceArtifact>()
+abstract class FirAnalysisHandler(
+    configurationComponents: ConfigurationComponents
+) : FrontendResultsHandler<FirSourceArtifact>(configurationComponents)

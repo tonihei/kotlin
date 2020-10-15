@@ -26,18 +26,16 @@ import org.jetbrains.kotlin.test.model.TestModule
 /*
  * TODO: add components which additionally configure KotlinCoreEnvironment and CompilerConfiguration
  */
-abstract class KotlinCoreEnvironmentProvider(
-    val components: ConfigurationComponents
-) {
+abstract class KotlinCoreEnvironmentProvider {
     abstract val testRootDisposable: Disposable
 
     abstract fun getKotlinCoreEnvironment(module: TestModule): KotlinCoreEnvironment
 }
 
 class KotlinCoreEnvironmentProviderImpl(
-    components: ConfigurationComponents,
+    val sourceFileProvider: SourceFileProvider,
     override val testRootDisposable: Disposable
-) : KotlinCoreEnvironmentProvider(components) {
+) : KotlinCoreEnvironmentProvider() {
     override fun getKotlinCoreEnvironment(module: TestModule): KotlinCoreEnvironment {
         return KotlinCoreEnvironment.createForTests(
             testRootDisposable,
@@ -68,7 +66,7 @@ class KotlinCoreEnvironmentProviderImpl(
         configuration[JVMConfigurationKeys.IR, false]
 
         module.javaFiles.takeIf { it.isNotEmpty() }?.let { javaFiles ->
-            val files = javaFiles.map { components.sourceFileProvider.getRealFileForSourceFile(it) }
+            val files = javaFiles.map { sourceFileProvider.getRealFileForSourceFile(it) }
             configuration.addJavaSourceRoots(files)
         }
 

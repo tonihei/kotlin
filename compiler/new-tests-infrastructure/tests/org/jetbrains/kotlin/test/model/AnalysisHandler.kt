@@ -5,18 +5,42 @@
 
 package org.jetbrains.kotlin.test.model
 
-sealed class AnalysisHandler<in I> {
+import org.jetbrains.kotlin.test.components.Assertions
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
+
+sealed class AnalysisHandler<in I>(val configurationComponents: ConfigurationComponents) {
+    protected val assertions: Assertions
+        get() = configurationComponents.assertions
+
     abstract fun processModule(module: TestModule, info: I)
 
     abstract fun processAfterAllModules(moduleStructure: TestModuleStructure)
 }
 
-abstract class FrontendResultsHandler<in R : ResultingArtifact.Source> : AnalysisHandler<R>()
-abstract class BackendInitialInfoHandler<in I : ResultingArtifact.BackendInputInfo> : AnalysisHandler<I>()
+abstract class FrontendResultsHandler<in R : ResultingArtifact.Source>(
+    configurationComponents: ConfigurationComponents
+) : AnalysisHandler<R>(configurationComponents)
 
-abstract class ArtifactsResultsHandler<in A : ResultingArtifact> : AnalysisHandler<A>()
+abstract class BackendInitialInfoHandler<in I : ResultingArtifact.BackendInputInfo>(
+    configurationComponents: ConfigurationComponents
+) : AnalysisHandler<I>(configurationComponents)
 
-abstract class BinaryArtifactsResultsHandler<in I : ResultingArtifact.Binary> : ArtifactsResultsHandler<I>()
-abstract class JvmBinaryArtifactsResultsHandler : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>()
-abstract class JsBinaryArtifactsResultsHandler : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Js>()
-abstract class NativeBinaryArtifactsResultsHandler : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Native>()
+abstract class ArtifactsResultsHandler<in A : ResultingArtifact>(
+    configurationComponents: ConfigurationComponents
+) : AnalysisHandler<A>(configurationComponents)
+
+abstract class BinaryArtifactsResultsHandler<in I : ResultingArtifact.Binary>(
+    configurationComponents: ConfigurationComponents
+) : ArtifactsResultsHandler<I>(configurationComponents)
+
+abstract class JvmBinaryArtifactsResultsHandler(
+    configurationComponents: ConfigurationComponents
+) : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>(configurationComponents)
+
+abstract class JsBinaryArtifactsResultsHandler(
+    configurationComponents: ConfigurationComponents
+) : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Js>(configurationComponents)
+
+abstract class NativeBinaryArtifactsResultsHandler(
+    configurationComponents: ConfigurationComponents
+) : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Native>(configurationComponents)

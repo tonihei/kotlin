@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.test.directives
 
 sealed class DirectivesContainer {
     abstract operator fun get(name: String): Directive?
+    abstract operator fun contains(directive: Directive): Boolean
 }
 
 abstract class SimpleDirectivesContainer : DirectivesContainer() {
@@ -32,6 +33,10 @@ abstract class SimpleDirectivesContainer : DirectivesContainer() {
         registeredDirectives[directive.name] = directive
     }
 
+    override fun contains(directive: Directive): Boolean {
+        return directive in registeredDirectives.values
+    }
+
     override fun toString(): String {
         return buildString {
             appendLine("Directive container:")
@@ -49,5 +54,9 @@ class ComposableDirectivesContainer(private vararg val containers: DirectivesCon
             container[name]?.let { return it }
         }
         return null
+    }
+
+    override fun contains(directive: Directive): Boolean {
+        return containers.any { directive in it }
     }
 }

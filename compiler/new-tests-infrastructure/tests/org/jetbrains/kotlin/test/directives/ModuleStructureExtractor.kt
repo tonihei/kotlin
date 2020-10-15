@@ -8,9 +8,7 @@ package org.jetbrains.kotlin.test.directives
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.test.TargetBackend
-import org.jetbrains.kotlin.test.components.Assertions
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
-import org.jetbrains.kotlin.test.components.DefaultsProvider
+import org.jetbrains.kotlin.test.components.*
 import org.jetbrains.kotlin.test.model.*
 import java.io.File
 
@@ -51,6 +49,7 @@ class ModuleStructureExtractor private constructor(
     private var currentModuleTargetPlatform: TargetPlatform? = null
     private var currentModuleTargetFrontend: TargetFrontend? = null
     private var currentModuleTargetBackend: TargetBackend? = null
+    private var currentModuleLanguageVersionSettingsBuilder: LanguageVersionSettingsBuilder = initLanguageSettingsBuilder()
     private var dependenciesOfCurrentModule = mutableListOf<DependencyDescription>()
     private var filesOfCurrentModule = mutableListOf<TestFile>()
 
@@ -153,7 +152,8 @@ class ModuleStructureExtractor private constructor(
             targetBackend = currentModuleTargetBackend ?: defaultsProvider.defaultBackend,
             files = filesOfCurrentModule,
             dependencies = dependenciesOfCurrentModule,
-            directives = directivesBuilder.build()
+            directives = directivesBuilder.build(),
+            languageVersionSettings = currentModuleLanguageVersionSettingsBuilder.build()
         )
         resetModuleCaches()
     }
@@ -175,6 +175,7 @@ class ModuleStructureExtractor private constructor(
         currentModuleTargetPlatform = null
         currentModuleTargetFrontend = null
         currentModuleTargetBackend = null
+        currentModuleLanguageVersionSettingsBuilder = initLanguageSettingsBuilder()
         filesOfCurrentModule = mutableListOf()
         dependenciesOfCurrentModule = mutableListOf()
         directivesBuilder = RegisteredDirectivesBuilder(directivesContainer, assertions)
@@ -189,7 +190,14 @@ class ModuleStructureExtractor private constructor(
     private fun tryParseRegularDirective(rawDirective: RegisteredDirectivesBuilder.RawDirective?) {
         if (rawDirective == null) return
         val parsedDirective = directivesBuilder.convertToRegisteredDirective(rawDirective) ?: return
+        if (parsedDirective.directive in LanguageSettingsDirectives) {
+            configureLanguageDirective(rawDirective)
+        }
         directivesBuilder.addParsedDirective(parsedDirective)
+    }
+
+    private fun configureLanguageDirective(rawDirective: RegisteredDirectivesBuilder.RawDirective) {
+        // TODO: implement proper language settings parsing
     }
 
     private fun parseTargetPlatform(values: List<String>): TargetPlatform? {
@@ -203,6 +211,10 @@ class ModuleStructureExtractor private constructor(
                 "Filename $fileName is not valid. Allowed extensions: ${allowedExtensionsForFiles.toArrayString()}"
             }
         }
+    }
+
+    private fun initLanguageSettingsBuilder(): LanguageVersionSettingsBuilder {
+        return defaultsProvider.newLanguageSettingsBuilder()
     }
 }
 

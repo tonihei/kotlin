@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.test.model
 
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.directives.RegisteredDirectives
@@ -33,7 +34,8 @@ data class TestModule(
     val targetBackend: TargetBackend,
     val files: List<TestFile>,
     val dependencies: List<DependencyDescription>,
-    val directives: RegisteredDirectives
+    val directives: RegisteredDirectives,
+    val languageVersionSettings: LanguageVersionSettings
 ) {
     override fun toString(): String {
         return buildString {

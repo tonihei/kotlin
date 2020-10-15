@@ -8,11 +8,14 @@ package org.jetbrains.kotlin.test.frontend.fir
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendClassResolver
 import org.jetbrains.kotlin.fir.backend.jvm.FirMetadataSerializer
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.model.DependencyProvider
 import org.jetbrains.kotlin.test.model.Frontend2BackendConverter
 import org.jetbrains.kotlin.test.model.TestModule
 
-class Fir2IrResultsConverter : Frontend2BackendConverter<FirSourceArtifact, IrBackendInputInfo>() {
+class Fir2IrResultsConverter(
+    configurationComponents: ConfigurationComponents
+) : Frontend2BackendConverter<FirSourceArtifact, IrBackendInputInfo>(configurationComponents) {
     override fun convert(
         module: TestModule,
         frontendResults: FirSourceArtifact,

@@ -5,7 +5,10 @@
 
 package org.jetbrains.kotlin.test.backend.classic
 
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.model.BackendFacade
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
-abstract class ClassicBackendFacade<R : ResultingArtifact.Binary> : BackendFacade<ClassicBackendInputInfo, R>()
+abstract class ClassicBackendFacade<R : ResultingArtifact.Binary>(
+    configurationComponents: ConfigurationComponents
+) : BackendFacade<ClassicBackendInputInfo, R>(configurationComponents)
