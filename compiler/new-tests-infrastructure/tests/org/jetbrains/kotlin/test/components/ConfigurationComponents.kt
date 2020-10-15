@@ -16,4 +16,5 @@ class ConfigurationComponents {
     lateinit var sourceFileProvider: SourceFileProvider
     lateinit var languageVersionSettingsProvider: LanguageVersionSettingsProvider
     lateinit var assertions: Assertions
+    lateinit var defaultsProvider: DefaultsProvider
 }

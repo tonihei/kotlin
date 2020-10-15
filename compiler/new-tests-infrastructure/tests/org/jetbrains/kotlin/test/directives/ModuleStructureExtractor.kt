@@ -7,24 +7,37 @@ package org.jetbrains.kotlin.test.directives
 
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
+import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.components.Assertions
+import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.DefaultsProvider
 import org.jetbrains.kotlin.test.model.*
 import java.io.File
 
 class ModuleStructureExtractor private constructor(
     private val testDataFiles: List<File>,
     private val directivesContainer: DirectivesContainer,
-    private val assertions: Assertions
+    private val configurationComponents: ConfigurationComponents
 ) {
     companion object {
-        fun splitTestDataByModules(testDataFileName: String, directivesContainer: DirectivesContainer, assertions: Assertions): TestModuleStructure {
+        fun splitTestDataByModules(
+            testDataFileName: String,
+            directivesContainer: DirectivesContainer,
+            configurationComponents: ConfigurationComponents
+        ): TestModuleStructure {
             val testDataFile = File(testDataFileName)
-            val extractor = ModuleStructureExtractor(listOf(testDataFile), directivesContainer, assertions)
+            val extractor = ModuleStructureExtractor(listOf(testDataFile), directivesContainer, configurationComponents)
             return extractor.splitTestDataByModules()
         }
 
         private val allowedExtensionsForFiles = listOf(".kt", ".java")
     }
+
+    private val assertions: Assertions
+        get() = configurationComponents.assertions
+
+    private val defaultsProvider: DefaultsProvider
+        get() = configurationComponents.defaultsProvider
 
     private lateinit var currentTestDataFile: File
 
@@ -33,13 +46,11 @@ class ModuleStructureExtractor private constructor(
 
     private val defaultModuleName: String
         get() = "main"
-    private val defaultTargetPlatform: TargetPlatform
-        get() = JvmPlatforms.unspecifiedJvmPlatform
-    private val defaultDependencyKind: DependencyKind
-        get() = DependencyKind.Source
 
     private var currentModuleName: String? = null
     private var currentModuleTargetPlatform: TargetPlatform? = null
+    private var currentModuleTargetFrontend: TargetFrontend? = null
+    private var currentModuleTargetBackend: TargetBackend? = null
     private var dependenciesOfCurrentModule = mutableListOf<DependencyDescription>()
     private var filesOfCurrentModule = mutableListOf<TestFile>()
 
@@ -94,13 +105,23 @@ class ModuleStructureExtractor private constructor(
             ModuleStructureDirectives.dependency,
             ModuleStructureDirectives.dependsOn -> {
                 val name = values.first() as String
-                val kind = values.getOrNull(1)?.let { valueOfOrNull(it as String) } ?: defaultDependencyKind
+                val kind = values.getOrNull(1)?.let { valueOfOrNull(it as String) } ?: defaultsProvider.defaultDependencyKind
                 val relation = when (directive) {
                     ModuleStructureDirectives.dependency -> DependencyRelation.Dependency
                     ModuleStructureDirectives.dependsOn -> DependencyRelation.DependsOn
                     else -> error("Should not be here")
                 }
                 dependenciesOfCurrentModule.add(DependencyDescription(name, kind, relation))
+            }
+            ModuleStructureDirectives.targetFrontend -> {
+                currentModuleTargetFrontend = values.singleOrNull() as TargetFrontend? ?: assertions.fail {
+                    "Target frontend specified incorrectly\nUsage: ${directive.description}"
+                }
+            }
+            ModuleStructureDirectives.targetBackend -> {
+                currentModuleTargetBackend = values.singleOrNull() as TargetBackend? ?: assertions.fail {
+                    "Target backend specified incorrectly\nUsage: ${directive.description}"
+                }
             }
             ModuleStructureDirectives.file -> {
                 if (currentFileName != null) {
@@ -127,7 +148,9 @@ class ModuleStructureExtractor private constructor(
         finishFile()
         modules += TestModule(
             name = currentModuleName ?: defaultModuleName,
-            targetPlatform = currentModuleTargetPlatform ?: defaultTargetPlatform,
+            targetPlatform = currentModuleTargetPlatform ?: defaultsProvider.defaultPlatform,
+            targetFrontend = currentModuleTargetFrontend ?: defaultsProvider.defaultFrontend,
+            targetBackend = currentModuleTargetBackend ?: defaultsProvider.defaultBackend,
             files = filesOfCurrentModule,
             dependencies = dependenciesOfCurrentModule,
             directives = directivesBuilder.build()
@@ -150,6 +173,8 @@ class ModuleStructureExtractor private constructor(
     private fun resetModuleCaches() {
         currentModuleName = null
         currentModuleTargetPlatform = null
+        currentModuleTargetFrontend = null
+        currentModuleTargetBackend = null
         filesOfCurrentModule = mutableListOf()
         dependenciesOfCurrentModule = mutableListOf()
         directivesBuilder = RegisteredDirectivesBuilder(directivesContainer, assertions)
@@ -184,7 +209,7 @@ class ModuleStructureExtractor private constructor(
 fun Iterable<*>.toArrayString(): String = joinToString(separator = ", ", prefix = "[", postfix = "]")
 fun Array<*>.toArrayString(): String = joinToString(separator = ", ", prefix = "[", postfix = "]")
 
-inline fun <reified T : Enum<T>>valueOfOrNull(value: String): T? {
+inline fun <reified T : Enum<T>> valueOfOrNull(value: String): T? {
     for (enumValue in enumValues<T>()) {
         if (enumValue.name == value) {
             return enumValue

@@ -5,6 +5,9 @@
 
 package org.jetbrains.kotlin.test.directives
 
+import org.jetbrains.kotlin.test.TargetBackend
+import org.jetbrains.kotlin.test.model.TargetFrontend
+
 object ModuleStructureDirectives : SimpleDirectivesContainer() {
     val module = valueDirective(
         name = "MODULE",
@@ -37,6 +40,22 @@ object ModuleStructureDirectives : SimpleDirectivesContainer() {
         """
             Usage: // FILE: name.{kt|java}
             Declares file with specified name in current module
+        """.trimIndent()
+    )
+
+    val targetFrontend = enumDirective<TargetFrontend>(
+        name = "TARGET_FRONTEND",
+        """
+            Usage: // TARGET_FRONTEND: {Frontend}
+            Declares frontend for analyzing current module 
+        """.trimIndent()
+    )
+
+    val targetBackend = enumDirective<TargetBackend>(
+        name = "TARGET_BACKEND",
+        """
+            Usage: // TARGET_BACKEND: {Backend}
+            Declares backend for analyzing current module 
         """.trimIndent()
     )
 }

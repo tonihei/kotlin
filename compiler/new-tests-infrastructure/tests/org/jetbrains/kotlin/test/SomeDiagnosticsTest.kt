@@ -161,7 +161,7 @@ class SomeDiagnosticsTest {
         globalHandlers.forEach { it.processAfterAllModules(moduleStructure) }
     }
 
-    private fun createComponents() = ConfigurationComponents.build {
+    private fun createComponents(): ConfigurationComponents = ConfigurationComponents.build {
         kotlinCoreEnvironmentProvider = KotlinCoreEnvironmentProviderImpl(this, TestDisposable())
         sourceFileProvider = SourceFileProviderImpl(emptyList())
         languageVersionSettingsProvider = LanguageVersionSettingsProviderImpl()
