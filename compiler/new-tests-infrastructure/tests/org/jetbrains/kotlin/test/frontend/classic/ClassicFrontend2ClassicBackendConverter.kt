@@ -7,13 +7,15 @@ package org.jetbrains.kotlin.test.frontend.classic
 
 import org.jetbrains.kotlin.test.backend.classic.ClassicBackendInputInfo
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
-import org.jetbrains.kotlin.test.model.DependencyProvider
-import org.jetbrains.kotlin.test.model.Frontend2BackendConverter
-import org.jetbrains.kotlin.test.model.TestModule
+import org.jetbrains.kotlin.test.model.*
 
 class ClassicFrontend2ClassicBackendConverter(
     configurationComponents: ConfigurationComponents
-) : Frontend2BackendConverter<ClassicFrontendSourceArtifacts, ClassicBackendInputInfo>(configurationComponents) {
+) : Frontend2BackendConverter<ClassicFrontendSourceArtifacts, ClassicBackendInputInfo>(
+    configurationComponents,
+    FrontendKind.ClassicFrontend,
+    BackendKind.ClassicBackend
+) {
     override fun convert(
         module: TestModule,
         frontendResults: ClassicFrontendSourceArtifacts,

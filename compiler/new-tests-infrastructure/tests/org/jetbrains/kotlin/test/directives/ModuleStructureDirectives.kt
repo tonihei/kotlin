@@ -5,8 +5,8 @@
 
 package org.jetbrains.kotlin.test.directives
 
-import org.jetbrains.kotlin.test.TargetBackend
-import org.jetbrains.kotlin.test.model.TargetFrontend
+import org.jetbrains.kotlin.test.model.BackendKind
+import org.jetbrains.kotlin.test.model.FrontendKind
 
 object ModuleStructureDirectives : SimpleDirectivesContainer() {
     val module = valueDirective(
@@ -43,7 +43,7 @@ object ModuleStructureDirectives : SimpleDirectivesContainer() {
         """.trimIndent()
     )
 
-    val targetFrontend = enumDirective<TargetFrontend>(
+    val targetFrontend = enumDirective<FrontendKind>(
         name = "TARGET_FRONTEND",
         """
             Usage: // TARGET_FRONTEND: {Frontend}
@@ -51,7 +51,7 @@ object ModuleStructureDirectives : SimpleDirectivesContainer() {
         """.trimIndent()
     )
 
-    val targetBackend = enumDirective<TargetBackend>(
+    val targetBackend = enumDirective<BackendKind>(
         name = "TARGET_BACKEND",
         """
             Usage: // TARGET_BACKEND: {Backend}

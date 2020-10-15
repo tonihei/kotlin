@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.test.frontend.fir
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.FirAnalyzerFacade
 import org.jetbrains.kotlin.fir.declarations.FirFile
+import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestFile
 
@@ -15,4 +16,7 @@ data class FirSourceArtifact(
     val session: FirSession,
     val firFiles: Map<TestFile, FirFile>,
     val firAnalyzerFacade: FirAnalyzerFacade
-) : ResultingArtifact.Source()
+) : ResultingArtifact.Source() {
+    override val frontendKind: FrontendKind
+        get() = FrontendKind.FIR
+}

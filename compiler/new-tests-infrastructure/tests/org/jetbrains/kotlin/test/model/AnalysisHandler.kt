@@ -18,29 +18,28 @@ sealed class AnalysisHandler<in I>(val configurationComponents: ConfigurationCom
 }
 
 abstract class FrontendResultsHandler<in R : ResultingArtifact.Source>(
-    configurationComponents: ConfigurationComponents
+    configurationComponents: ConfigurationComponents,
+    val frontendKind: FrontendKind
 ) : AnalysisHandler<R>(configurationComponents)
 
 abstract class BackendInitialInfoHandler<in I : ResultingArtifact.BackendInputInfo>(
-    configurationComponents: ConfigurationComponents
+    configurationComponents: ConfigurationComponents,
+    val backendKind: BackendKind
 ) : AnalysisHandler<I>(configurationComponents)
 
 abstract class ArtifactsResultsHandler<in A : ResultingArtifact>(
-    configurationComponents: ConfigurationComponents
+    configurationComponents: ConfigurationComponents,
+    val artifactKind: ArtifactKind
 ) : AnalysisHandler<A>(configurationComponents)
-
-abstract class BinaryArtifactsResultsHandler<in I : ResultingArtifact.Binary>(
-    configurationComponents: ConfigurationComponents
-) : ArtifactsResultsHandler<I>(configurationComponents)
 
 abstract class JvmBinaryArtifactsResultsHandler(
     configurationComponents: ConfigurationComponents
-) : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>(configurationComponents)
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>(configurationComponents, ArtifactKind.Jvm)
 
 abstract class JsBinaryArtifactsResultsHandler(
     configurationComponents: ConfigurationComponents
-) : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Js>(configurationComponents)
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Js>(configurationComponents, ArtifactKind.Js)
 
 abstract class NativeBinaryArtifactsResultsHandler(
     configurationComponents: ConfigurationComponents
-) : BinaryArtifactsResultsHandler<ResultingArtifact.Binary.Native>(configurationComponents)
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Native>(configurationComponents, ArtifactKind.Native)

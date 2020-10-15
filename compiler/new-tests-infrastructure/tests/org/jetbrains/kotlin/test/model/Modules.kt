@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.test.model
 
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.platform.TargetPlatform
-import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import java.io.File
 
@@ -30,8 +29,8 @@ data class TestModuleStructure(
 data class TestModule(
     val name: String,
     val targetPlatform: TargetPlatform,
-    val targetFrontend: TargetFrontend,
-    val targetBackend: TargetBackend,
+    val frontendKind: FrontendKind,
+    val targetBackend: BackendKind,
     val files: List<TestFile>,
     val dependencies: List<DependencyDescription>,
     val directives: RegisteredDirectives,
@@ -76,6 +75,14 @@ data class DependencyDescription(
     val relation: DependencyRelation
 )
 
-enum class TargetFrontend {
-    FIR, ClassicFrontend
+enum class FrontendKind {
+    ClassicFrontend, FIR
+}
+
+enum class BackendKind {
+    ClassicBackend, IrBackend
+}
+
+enum class ArtifactKind {
+    Jvm, Js, Native, KLib
 }

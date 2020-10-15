@@ -7,10 +7,11 @@ package org.jetbrains.kotlin.test.frontend.classic.handlers
 
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
+import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.model.FrontendResultsHandler
 
 abstract class ClassicFrontendAnalysisHandler(
     configurationComponents: ConfigurationComponents
-) : FrontendResultsHandler<ClassicFrontendSourceArtifacts>(configurationComponents)
+) : FrontendResultsHandler<ClassicFrontendSourceArtifacts>(configurationComponents, FrontendKind.ClassicFrontend)
 
 

@@ -8,10 +8,9 @@ package org.jetbrains.kotlin.test.components
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.fir.PrivateForInline
 import org.jetbrains.kotlin.platform.TargetPlatform
-import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
-import org.jetbrains.kotlin.test.TargetBackend
+import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.DependencyKind
-import org.jetbrains.kotlin.test.model.TargetFrontend
+import org.jetbrains.kotlin.test.model.FrontendKind
 
 /*
  * TODO:
@@ -19,8 +18,8 @@ import org.jetbrains.kotlin.test.model.TargetFrontend
  *   - default libraries
  */
 class DefaultsProvider(
-    val defaultBackend: TargetBackend,
-    val defaultFrontend: TargetFrontend,
+    val defaultBackend: BackendKind,
+    val defaultFrontend: FrontendKind,
     val defaultLanguageSettings: LanguageVersionSettings,
     private val defaultLanguageSettingsBuilder: LanguageVersionSettingsBuilder,
     val defaultPlatform: TargetPlatform,
@@ -72,8 +71,8 @@ annotation class DefaultsDsl
 
 @DefaultsDsl
 class DefaultsProviderBuilder {
-    lateinit var backend: TargetBackend
-    lateinit var frontend: TargetFrontend
+    lateinit var backend: BackendKind
+    lateinit var frontend: FrontendKind
     lateinit var targetPlatform: TargetPlatform
     lateinit var dependencyKind: DependencyKind
 

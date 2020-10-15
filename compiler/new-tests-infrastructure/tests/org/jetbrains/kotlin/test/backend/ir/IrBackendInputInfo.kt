@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi2ir.PsiSourceManager
+import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
 // IR backend (JVM, JS, Native)
@@ -21,4 +22,7 @@ data class IrBackendInputInfo(
     val jvmBackendClassResolver: JvmBackendClassResolver,
     val ktFiles: Collection<KtFile>,
     val serializerFactory: MetadataSerializerFactory
-) : ResultingArtifact.BackendInputInfo()
+) : ResultingArtifact.BackendInputInfo() {
+    override val backendKind: BackendKind
+        get() = BackendKind.IrBackend
+}

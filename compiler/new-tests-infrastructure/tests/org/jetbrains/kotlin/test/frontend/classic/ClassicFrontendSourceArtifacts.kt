@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestFile
 
@@ -19,4 +20,7 @@ data class ClassicFrontendSourceArtifacts(
     val analysisResult: AnalysisResult,
     val project: Project,
     val languageVersionSettings: LanguageVersionSettings
-) : ResultingArtifact.Source()
+) : ResultingArtifact.Source() {
+    override val frontendKind: FrontendKind
+        get() = FrontendKind.ClassicFrontend
+}

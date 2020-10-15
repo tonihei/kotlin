@@ -10,12 +10,13 @@ import org.jetbrains.kotlin.codegen.DefaultCodegenFactory
 import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.model.ArtifactKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
 
 class ClassicJvmBackendFacade(
     configurationComponents: ConfigurationComponents
-) : ClassicBackendFacade<ResultingArtifact.Binary.Jvm>(configurationComponents) {
+) : ClassicBackendFacade<ResultingArtifact.Binary.Jvm>(configurationComponents, ArtifactKind.Jvm) {
     override fun produce(module: TestModule, initialInfo: ClassicBackendInputInfo): ResultingArtifact.Binary.Jvm {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val compilerConfiguration = environment.configuration

@@ -41,15 +41,7 @@ class FirDependencyProvider(
         }
     }
 
-    override fun getCompiledKlib(name: String): ResultingArtifact.KLib? {
-        TODO("Not yet implemented")
-    }
-
     override fun getBinaryDependency(name: String): ResultingArtifact.Binary? {
-        TODO("Not yet implemented")
-    }
-
-    override fun registerCompiledKLib(name: String, artifact: ResultingArtifact.KLib) {
         TODO("Not yet implemented")
     }
 

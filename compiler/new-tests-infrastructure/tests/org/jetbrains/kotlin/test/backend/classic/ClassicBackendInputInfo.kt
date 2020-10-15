@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
 // Old backend (JVM and JS)
@@ -19,5 +20,7 @@ data class ClassicBackendInputInfo(
     val moduleDescriptor: ModuleDescriptor,
     val project: Project,
     val languageVersionSettings: LanguageVersionSettings
-) : ResultingArtifact.BackendInputInfo()
-
+) : ResultingArtifact.BackendInputInfo() {
+    override val backendKind: BackendKind
+        get() = BackendKind.ClassicBackend
+}

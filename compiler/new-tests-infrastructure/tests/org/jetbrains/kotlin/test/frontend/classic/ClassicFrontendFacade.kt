@@ -14,11 +14,12 @@ import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.components.getKtFilesForSourceFiles
 import org.jetbrains.kotlin.test.model.DependencyKind
 import org.jetbrains.kotlin.test.model.FrontendFacade
+import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.model.TestModule
 
 class ClassicFrontendFacade(
     configurationComponents: ConfigurationComponents
-) : FrontendFacade<ClassicFrontendSourceArtifacts, ClassicDependencyProvider>(configurationComponents) {
+) : FrontendFacade<ClassicFrontendSourceArtifacts, ClassicDependencyProvider>(configurationComponents, FrontendKind.ClassicFrontend) {
     override fun analyze(module: TestModule, dependencyProvider: ClassicDependencyProvider): ClassicFrontendSourceArtifacts {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val project = environment.project

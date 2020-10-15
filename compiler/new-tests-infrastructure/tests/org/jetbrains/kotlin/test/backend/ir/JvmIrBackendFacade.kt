@@ -18,12 +18,13 @@ import org.jetbrains.kotlin.ir.descriptors.IrFunctionFactory
 import org.jetbrains.kotlin.ir.util.generateTypicalIrProviderList
 import org.jetbrains.kotlin.modules.TargetId
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.model.ArtifactKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
 
 class JvmIrBackendFacade(
     configurationComponents: ConfigurationComponents
-) : IrBackendFacade<ResultingArtifact.Binary.Jvm>(configurationComponents) {
+) : IrBackendFacade<ResultingArtifact.Binary.Jvm>(configurationComponents, ArtifactKind.Jvm) {
     override fun produce(module: TestModule, initialInfo: IrBackendInputInfo): ResultingArtifact.Binary.Jvm {
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val compilerConfiguration = environment.configuration

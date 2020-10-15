@@ -10,13 +10,35 @@ import org.jetbrains.kotlin.test.components.Assertions
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
 
 sealed class ResultingArtifact {
-    abstract class Source : ResultingArtifact()
-    abstract class BackendInputInfo : ResultingArtifact()
-    class KLib : ResultingArtifact()
+    abstract class Source : ResultingArtifact() {
+        abstract val frontendKind: FrontendKind
+    }
+
+    abstract class BackendInputInfo : ResultingArtifact() {
+        abstract val backendKind: BackendKind
+    }
     sealed class Binary : ResultingArtifact() {
-        class Jvm(val classFileFactory: ClassFileFactory) : Binary()
-        class Js : Binary()
-        class Native : Binary()
+        class Jvm(val classFileFactory: ClassFileFactory) : Binary() {
+            override val artifactKind: ArtifactKind
+                get() = ArtifactKind.Jvm
+        }
+
+        class Js : Binary() {
+            override val artifactKind: ArtifactKind
+                get() = ArtifactKind.Js
+        }
+
+        class Native : Binary() {
+            override val artifactKind: ArtifactKind
+                get() = ArtifactKind.Native
+        }
+
+        class KLib : Binary() {
+            override val artifactKind: ArtifactKind
+                get() = ArtifactKind.KLib
+        }
+
+        abstract val artifactKind: ArtifactKind
     }
 }
 
@@ -38,7 +60,6 @@ abstract class DependencyProvider<R : ResultingArtifact.Source>(
         return analyzedModules[name]
     }
 
-    abstract fun getCompiledKlib(name: String): ResultingArtifact.KLib?
     abstract fun getBinaryDependency(name: String): ResultingArtifact.Binary?
 
     fun registerAnalyzedModule(name: String, results: R) {
@@ -48,6 +69,5 @@ abstract class DependencyProvider<R : ResultingArtifact.Source>(
         analyzedModules[name] = results
     }
 
-    abstract fun registerCompiledKLib(name: String, artifact: ResultingArtifact.KLib)
     abstract fun registerCompiledBinary(name: String, artifact: ResultingArtifact.Binary)
 }
