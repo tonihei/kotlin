@@ -3,7 +3,12 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
-package org.jetbrains.kotlin.test.impl
+package org.jetbrains.kotlin.test
 
-class TestRunner {
+abstract class TestRunner {
+    abstract val testConfiguration: TestConfiguration
+
+    fun runTest(testDataFileName: String) {
+
+    }
 }

@@ -10,8 +10,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.config.languageVersionSettings
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
-import org.jetbrains.kotlin.test.components.getKtFilesForSourceFiles
+import org.jetbrains.kotlin.test.components.*
 import org.jetbrains.kotlin.test.model.DependencyKind
 import org.jetbrains.kotlin.test.model.FrontendFacade
 import org.jetbrains.kotlin.test.model.FrontendKind
@@ -20,9 +19,12 @@ import org.jetbrains.kotlin.test.model.TestModule
 class ClassicFrontendFacade(
     configurationComponents: ConfigurationComponents
 ) : FrontendFacade<ClassicFrontendSourceArtifacts>(configurationComponents, FrontendKind.ClassicFrontend) {
-    val dependencyProvider: ClassicDependencyProvider = null!!
+    override val additionalServices: List<ServiceRegistrationData>
+        get() = listOf(serviceRegistrationData(::ModuleDescriptorProvider))
 
-    override fun analyze(module: TestModule): ClassicFrontendSourceArtifacts {
+    override fun analyze(module: TestModule, testServices: TestServices): ClassicFrontendSourceArtifacts {
+        val dependencyProvider = testServices.dependencyProvider
+        val moduleDescriptorProvider = testServices.moduleDescriptorProvider
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val project = environment.project
 
@@ -32,7 +34,7 @@ class ClassicFrontendFacade(
 
         val dependentDescriptors = module.dependencies.filter { it.kind == DependencyKind.Source }.map {
             val testModule = dependencyProvider.getTestModule(it.moduleName)
-            dependencyProvider.getModuleDescriptor(testModule)
+            moduleDescriptorProvider.getModuleDescriptor(testModule)
         }
 
         // TODO: add configuring JvmTarget
@@ -47,7 +49,7 @@ class ClassicFrontendFacade(
             environment::createPackagePartProvider,
             explictModuleDependencyList = dependentDescriptors
         )
-        dependencyProvider.replaceModuleDescriptorForModule(module, analysisResult.moduleDescriptor)
+        moduleDescriptorProvider.replaceModuleDescriptorForModule(module, analysisResult.moduleDescriptor)
         return ClassicFrontendSourceArtifacts(
             ktFilesMap,
             analysisResult,

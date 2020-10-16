@@ -9,14 +9,15 @@ import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
 import org.jetbrains.kotlin.fir.session.FirJvmModuleInfo
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
-import org.jetbrains.kotlin.test.model.DependencyProvider
-import org.jetbrains.kotlin.test.model.ResultingArtifact
+import org.jetbrains.kotlin.test.components.TestService
+import org.jetbrains.kotlin.test.components.TestServices
+import org.jetbrains.kotlin.test.components.dependencyProvider
 import org.jetbrains.kotlin.test.model.TestModule
 
-class FirDependencyProvider(
-    configurationComponents: ConfigurationComponents,
-    testModules: List<TestModule>
-) : DependencyProvider<FirSourceArtifact>(configurationComponents, testModules) {
+class FirModuleInfoProvider(
+    private val components: ConfigurationComponents,
+    private val testServices: TestServices
+) : TestService {
     val firSessionProvider = FirProjectSessionProvider()
 
     private val builtinsByModule: MutableMap<TestModule, FirJvmModuleInfo> = mutableMapOf()
@@ -26,7 +27,7 @@ class FirDependencyProvider(
         return firModuleInfoByModule.getOrPut(module) {
             val dependencies = mutableListOf(builtinsModuleInfoForModule(module))
             module.dependencies.mapTo(dependencies) {
-                convertToFirModuleInfo(getTestModule(it.moduleName))
+                convertToFirModuleInfo(testServices.dependencyProvider.getTestModule(it.moduleName))
             }
             FirJvmModuleInfo(
                 module.name,
@@ -40,12 +41,6 @@ class FirDependencyProvider(
             FirJvmModuleInfo(Name.special("<built-ins>"), emptyList())
         }
     }
-
-    override fun getBinaryDependency(name: String): ResultingArtifact.Binary<*>? {
-        TODO("Not yet implemented")
-    }
-
-    override fun registerCompiledBinary(name: String, artifact: ResultingArtifact.Binary<*>) {
-        TODO("Not yet implemented")
-    }
 }
+
+val TestServices.firModuleInfoProvider: FirModuleInfoProvider by TestServices.testServiceAccessor()

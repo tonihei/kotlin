@@ -15,16 +15,17 @@ import org.jetbrains.kotlin.fir.analysis.FirAnalyzerFacade
 import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
 import org.jetbrains.kotlin.fir.session.FirJvmModuleInfo
 import org.jetbrains.kotlin.fir.session.FirSessionFactory
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
-import org.jetbrains.kotlin.test.components.getKtFilesForSourceFiles
+import org.jetbrains.kotlin.test.components.*
 import org.jetbrains.kotlin.test.model.*
 
 class FirFrontendFacade(
     configurationComponents: ConfigurationComponents
 ) : FrontendFacade<FirSourceArtifact>(configurationComponents, FrontendKind.FIR) {
-    private val dependencyProvider: FirDependencyProvider = null!!
+    override val additionalServices: List<ServiceRegistrationData>
+        get() = listOf(serviceRegistrationData(::FirModuleInfoProvider))
 
-    override fun analyze(module: TestModule): FirSourceArtifact {
+    override fun analyze(module: TestModule, testServices: TestServices): FirSourceArtifact {
+        val moduleInfoProvider = testServices.firModuleInfoProvider
         val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         // TODO: add configurable parser
 
@@ -34,15 +35,15 @@ class FirFrontendFacade(
 
         val ktFiles = configurationComponents.sourceFileProvider.getKtFilesForSourceFiles(module.files, project).values
 
-        val sessionProvider = dependencyProvider.firSessionProvider
+        val sessionProvider = moduleInfoProvider.firSessionProvider
 
         val languageVersionSettings = module.languageVersionSettings
-        val builtinsModuleInfo = dependencyProvider.builtinsModuleInfoForModule(module)
+        val builtinsModuleInfo = moduleInfoProvider.builtinsModuleInfoForModule(module)
         createSessionForBuiltins(builtinsModuleInfo, sessionProvider, environment)
         createSessionForBinaryDependencies(module, sessionProvider, environment)
 
         val sourcesScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(project, ktFiles)
-        val sourcesModuleInfo = dependencyProvider.convertToFirModuleInfo(module)
+        val sourcesModuleInfo = moduleInfoProvider.convertToFirModuleInfo(module)
         val session = FirSessionFactory.createJavaModuleBasedSession(
             sourcesModuleInfo,
             sessionProvider,

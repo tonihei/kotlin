@@ -5,24 +5,6 @@
 
 package org.jetbrains.kotlin.test
 
-import com.intellij.testFramework.TestDataPath
-import org.jetbrains.kotlin.test.backend.classic.ClassicBackendInputInfo
-import org.jetbrains.kotlin.test.backend.classic.ClassicJvmBackendFacade
-import org.jetbrains.kotlin.test.backend.handlers.JvmBoxRunner
-import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
-import org.jetbrains.kotlin.test.backend.ir.JvmIrBackendFacade
-import org.jetbrains.kotlin.test.components.*
-import org.jetbrains.kotlin.test.directives.ModuleStructureExtractor
-import org.jetbrains.kotlin.test.directives.SimpleDirectivesContainer
-import org.jetbrains.kotlin.test.frontend.classic.*
-import org.jetbrains.kotlin.test.frontend.classic.handlers.DeclarationsDumpHandler
-import org.jetbrains.kotlin.test.frontend.fir.FirDependencyProvider
-import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
-import org.jetbrains.kotlin.test.frontend.fir.handlers.FirDumpHandler
-import org.jetbrains.kotlin.test.model.ResultingArtifact
-import org.jetbrains.kotlin.test.model.TestModule
-import org.junit.jupiter.api.Test
-
 //@TestMetadata("compiler/new-tests-infrastructure/testData")
 //@TestDataPath("\$PROJECT_ROOT")
 //class SomeDiagnosticsTest {

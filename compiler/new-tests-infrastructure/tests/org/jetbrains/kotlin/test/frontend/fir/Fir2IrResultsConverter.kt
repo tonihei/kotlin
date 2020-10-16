@@ -9,6 +9,8 @@ import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendClassResolver
 import org.jetbrains.kotlin.fir.backend.jvm.FirMetadataSerializer
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.ServiceRegistrationData
+import org.jetbrains.kotlin.test.components.TestServices
 import org.jetbrains.kotlin.test.model.*
 
 class Fir2IrResultsConverter(
@@ -21,7 +23,7 @@ class Fir2IrResultsConverter(
     override fun convert(
         module: TestModule,
         frontendResults: FirSourceArtifact,
-        dependencyProvider: DependencyProvider<FirSourceArtifact>
+        testServices: TestServices
     ): IrBackendInputInfo {
         val (irModuleFragment, symbolTable, sourceManager, components) = frontendResults.firAnalyzerFacade.convertToIr()
         return IrBackendInputInfo(

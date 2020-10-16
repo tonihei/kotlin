@@ -21,6 +21,8 @@ import org.jetbrains.kotlin.psi2ir.Psi2IrTranslator
 import org.jetbrains.kotlin.resolve.AnalyzingUtils
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.ServiceRegistrationData
+import org.jetbrains.kotlin.test.components.TestServices
 import org.jetbrains.kotlin.test.model.*
 
 class ClassicFrontend2IrConverter(
@@ -33,7 +35,7 @@ class ClassicFrontend2IrConverter(
     override fun convert(
         module: TestModule,
         frontendResults: ClassicFrontendSourceArtifacts,
-        dependencyProvider: DependencyProvider<ClassicFrontendSourceArtifacts>
+        testServices: TestServices
     ): IrBackendInputInfo {
         val (psiFiles, analysisResult, _, languageVersionSettings) = frontendResults
         val psi2ir = Psi2IrTranslator(languageVersionSettings, Psi2IrConfiguration(ignoreErrors = false))

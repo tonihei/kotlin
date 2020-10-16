@@ -7,6 +7,8 @@ package org.jetbrains.kotlin.test.frontend.classic
 
 import org.jetbrains.kotlin.test.backend.classic.ClassicBackendInputInfo
 import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.ServiceRegistrationData
+import org.jetbrains.kotlin.test.components.TestServices
 import org.jetbrains.kotlin.test.model.*
 
 class ClassicFrontend2ClassicBackendConverter(
@@ -19,7 +21,7 @@ class ClassicFrontend2ClassicBackendConverter(
     override fun convert(
         module: TestModule,
         frontendResults: ClassicFrontendSourceArtifacts,
-        dependencyProvider: DependencyProvider<ClassicFrontendSourceArtifacts>
+        testServices: TestServices
     ): ClassicBackendInputInfo {
         val (psiFiles, analysisResults, project, languageVersionSettings) = frontendResults
         return ClassicBackendInputInfo(
