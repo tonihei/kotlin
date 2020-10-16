@@ -6,11 +6,12 @@
 package org.jetbrains.kotlin.test.model
 
 import org.jetbrains.kotlin.test.components.Assertions
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.TestServices
+import org.jetbrains.kotlin.test.components.assertions
 
-sealed class AnalysisHandler<in I>(val configurationComponents: ConfigurationComponents) {
+sealed class AnalysisHandler<in I>(val testServices: TestServices) {
     protected val assertions: Assertions
-        get() = configurationComponents.assertions
+        get() = testServices.assertions
 
     abstract fun processModule(module: TestModule, info: I)
 
@@ -18,28 +19,28 @@ sealed class AnalysisHandler<in I>(val configurationComponents: ConfigurationCom
 }
 
 abstract class FrontendResultsHandler<R : ResultingArtifact.Source<R>>(
-    configurationComponents: ConfigurationComponents,
+    testServices: TestServices,
     val frontendKind: FrontendKind<R>
-) : AnalysisHandler<R>(configurationComponents)
+) : AnalysisHandler<R>(testServices)
 
 abstract class BackendInitialInfoHandler<I : ResultingArtifact.BackendInputInfo<I>>(
-    configurationComponents: ConfigurationComponents,
+    testServices: TestServices,
     val backendKind: BackendKind<I>
-) : AnalysisHandler<I>(configurationComponents)
+) : AnalysisHandler<I>(testServices)
 
 abstract class ArtifactsResultsHandler<A : ResultingArtifact.Binary<A>>(
-    configurationComponents: ConfigurationComponents,
+    testServices: TestServices,
     val artifactKind: ArtifactKind<A>
-) : AnalysisHandler<A>(configurationComponents)
+) : AnalysisHandler<A>(testServices)
 
 abstract class JvmBinaryArtifactsResultsHandler(
-    configurationComponents: ConfigurationComponents
-) : ArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>(configurationComponents, ArtifactKind.Jvm)
+    testServices: TestServices
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>(testServices, ArtifactKind.Jvm)
 
 abstract class JsBinaryArtifactsResultsHandler(
-    configurationComponents: ConfigurationComponents
-) : ArtifactsResultsHandler<ResultingArtifact.Binary.Js>(configurationComponents, ArtifactKind.Js)
+    testServices: TestServices
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Js>(testServices, ArtifactKind.Js)
 
 abstract class NativeBinaryArtifactsResultsHandler(
-    configurationComponents: ConfigurationComponents
-) : ArtifactsResultsHandler<ResultingArtifact.Binary.Native>(configurationComponents, ArtifactKind.Native)
+    testServices: TestServices
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Native>(testServices, ArtifactKind.Native)

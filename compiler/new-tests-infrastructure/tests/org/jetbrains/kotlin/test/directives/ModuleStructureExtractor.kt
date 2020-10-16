@@ -14,16 +14,16 @@ import java.io.File
 class ModuleStructureExtractor private constructor(
     private val testDataFiles: List<File>,
     private val directivesContainer: DirectivesContainer,
-    private val configurationComponents: ConfigurationComponents
+    private val testServices: TestServices
 ) {
     companion object {
         fun splitTestDataByModules(
             testDataFileName: String,
             directivesContainer: DirectivesContainer,
-            configurationComponents: ConfigurationComponents
+            testServices: TestServices
         ): TestModuleStructure {
             val testDataFile = File(testDataFileName)
-            val extractor = ModuleStructureExtractor(listOf(testDataFile), directivesContainer, configurationComponents)
+            val extractor = ModuleStructureExtractor(listOf(testDataFile), directivesContainer, testServices)
             return extractor.splitTestDataByModules()
         }
 
@@ -31,10 +31,10 @@ class ModuleStructureExtractor private constructor(
     }
 
     private val assertions: Assertions
-        get() = configurationComponents.assertions
+        get() = testServices.assertions
 
     private val defaultsProvider: DefaultsProvider
-        get() = configurationComponents.defaultsProvider
+        get() = testServices.defaultsProvider
 
     private lateinit var currentTestDataFile: File
 

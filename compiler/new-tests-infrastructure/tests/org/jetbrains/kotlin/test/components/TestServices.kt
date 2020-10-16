@@ -14,16 +14,16 @@ interface TestService
 
 data class ServiceRegistrationData(
     val kClass: KClass<out TestService>,
-    val serviceConstructor: (ConfigurationComponents, TestServices) -> TestService
+    val serviceConstructor: (TestServices) -> TestService
 )
 
 inline fun <reified T : TestService> serviceRegistrationData(
-    noinline serviceConstructor: (ConfigurationComponents, TestServices) -> T
+    noinline serviceConstructor: (TestServices) -> T
 ): ServiceRegistrationData {
     return ServiceRegistrationData(T::class, serviceConstructor)
 }
 
-class TestServices(val configurationComponents: ConfigurationComponents) : ComponentArrayOwner<TestService, TestService>(){
+class TestServices : ComponentArrayOwner<TestService, TestService>(){
     override val typeRegistry: TypeRegistry<TestService, TestService>
         get() = Companion
 
@@ -34,6 +34,14 @@ class TestServices(val configurationComponents: ConfigurationComponents) : Compo
     }
 
     fun register(data: ServiceRegistrationData) {
-        registerComponent(data.kClass, data.serviceConstructor(configurationComponents, this))
+        registerComponent(data.kClass, data.serviceConstructor(this))
+    }
+
+    fun register(kClass: KClass<out TestService>, service: TestService) {
+        registerComponent(kClass, service)
+    }
+
+    fun register(data: List<ServiceRegistrationData>) {
+        data.forEach { register(it) }
     }
 }

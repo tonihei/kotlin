@@ -13,7 +13,7 @@ import java.io.File
 import java.io.IOException
 import org.junit.jupiter.api.Assertions as Junit5Assertions
 
-abstract class Assertions {
+abstract class Assertions : TestService {
     fun assertEqualsToFile(expectedFile: File, actual: String, sanitizer: (String) -> String = { it }) {
         assertEqualsToFile("Actual data differs from file content", expectedFile, actual, sanitizer)
     }
@@ -25,6 +25,8 @@ abstract class Assertions {
     abstract fun assertFalse(value: Boolean)
     abstract fun fail(message: () -> String): Nothing
 }
+
+val TestServices.assertions: Assertions by TestServices.testServiceAccessor()
 
 object JUnit5Assertions : Assertions() {
     override fun assertEqualsToFile(message: String, expectedFile: File, actual: String, sanitizer: (String) -> String) {

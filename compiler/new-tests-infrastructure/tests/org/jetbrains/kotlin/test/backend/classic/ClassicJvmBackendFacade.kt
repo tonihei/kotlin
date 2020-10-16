@@ -9,22 +9,20 @@ import org.jetbrains.kotlin.codegen.ClassBuilderFactories
 import org.jetbrains.kotlin.codegen.DefaultCodegenFactory
 import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
 import org.jetbrains.kotlin.codegen.state.GenerationState
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
-import org.jetbrains.kotlin.test.components.ServiceRegistrationData
 import org.jetbrains.kotlin.test.components.TestServices
+import org.jetbrains.kotlin.test.components.kotlinCoreEnvironmentProvider
 import org.jetbrains.kotlin.test.model.ArtifactKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
 
 class ClassicJvmBackendFacade(
-    configurationComponents: ConfigurationComponents
-) : ClassicBackendFacade<ResultingArtifact.Binary.Jvm>(configurationComponents, ArtifactKind.Jvm) {
+    testServices: TestServices
+) : ClassicBackendFacade<ResultingArtifact.Binary.Jvm>(testServices, ArtifactKind.Jvm) {
     override fun produce(
         module: TestModule,
-        initialInfo: ClassicBackendInputInfo,
-        testServices: TestServices
+        initialInfo: ClassicBackendInputInfo
     ): ResultingArtifact.Binary.Jvm {
-        val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
+        val environment = testServices.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val compilerConfiguration = environment.configuration
         val (psiFiles, bindingContext, moduleDescriptor, project, languageVersionSettings) = initialInfo
         // TODO: add configuring classBuilderFactory

@@ -7,19 +7,18 @@ package org.jetbrains.kotlin.test.frontend.classic
 
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.components.TestService
 import org.jetbrains.kotlin.test.components.TestServices
+import org.jetbrains.kotlin.test.components.assertions
 import org.jetbrains.kotlin.test.model.TestModule
 
 class ModuleDescriptorProvider(
-    private val components: ConfigurationComponents,
     private val testServices: TestServices
 ) : TestService {
     private val moduleDescriptorByModule = mutableMapOf<TestModule, ModuleDescriptorImpl>()
 
     fun getModuleDescriptor(testModule: TestModule): ModuleDescriptorImpl {
-        return moduleDescriptorByModule[testModule] ?: components.assertions.fail {
+        return moduleDescriptorByModule[testModule] ?: testServices.assertions.fail {
             "Module descriptor for module ${testModule.name} not found"
         }
     }

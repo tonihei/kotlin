@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.test.model
 import org.jetbrains.kotlin.codegen.ClassFileFactory
 import org.jetbrains.kotlin.test.backend.classic.ClassicBackendInputInfo
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
 import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 

@@ -17,18 +17,18 @@ import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.model.TestModule
 
 class ClassicFrontendFacade(
-    configurationComponents: ConfigurationComponents
-) : FrontendFacade<ClassicFrontendSourceArtifacts>(configurationComponents, FrontendKind.ClassicFrontend) {
+    testServices: TestServices
+) : FrontendFacade<ClassicFrontendSourceArtifacts>(testServices, FrontendKind.ClassicFrontend) {
     override val additionalServices: List<ServiceRegistrationData>
         get() = listOf(serviceRegistrationData(::ModuleDescriptorProvider))
 
-    override fun analyze(module: TestModule, testServices: TestServices): ClassicFrontendSourceArtifacts {
+    override fun analyze(module: TestModule): ClassicFrontendSourceArtifacts {
         val dependencyProvider = testServices.dependencyProvider
         val moduleDescriptorProvider = testServices.moduleDescriptorProvider
-        val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
+        val environment = testServices.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         val project = environment.project
 
-        val ktFilesMap = configurationComponents.sourceFileProvider.getKtFilesForSourceFiles(module.files, project)
+        val ktFilesMap = testServices.sourceFileProvider.getKtFilesForSourceFiles(module.files, project)
         val ktFiles = ktFilesMap.values
         val languageVersionSettings = module.languageVersionSettings
 

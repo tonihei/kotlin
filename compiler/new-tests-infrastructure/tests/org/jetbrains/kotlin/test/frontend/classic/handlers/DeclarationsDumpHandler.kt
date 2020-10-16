@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.DescriptorUtils
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.TestServices
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
 import org.jetbrains.kotlin.test.model.TestFile
 import org.jetbrains.kotlin.test.model.TestModule
@@ -25,8 +25,8 @@ import org.jetbrains.kotlin.utils.keysToMap
 import java.util.function.Predicate
 
 class DeclarationsDumpHandler(
-    configurationComponents: ConfigurationComponents
-) : ClassicFrontendAnalysisHandler(configurationComponents) {
+    testServices: TestServices
+) : ClassicFrontendAnalysisHandler(testServices) {
     private val dumper: MultiModuleInfoDumper = MultiModuleInfoDumperImpl()
 
     override fun processAfterAllModules(moduleStructure: TestModuleStructure) {

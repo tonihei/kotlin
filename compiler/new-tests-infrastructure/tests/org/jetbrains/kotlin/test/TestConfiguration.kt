@@ -6,13 +6,13 @@
 package org.jetbrains.kotlin.test
 
 import com.intellij.openapi.Disposable
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.TestServices
 import org.jetbrains.kotlin.test.model.*
 
 abstract class TestConfiguration {
     abstract val rootDisposable: Disposable
 
-    abstract val configurationComponents: ConfigurationComponents
+    abstract val testServices: TestServices
 
     abstract fun <R : ResultingArtifact.Source<R>> getFrontendFacade(frontendKind: FrontendKind<R>): FrontendFacade<R>
 

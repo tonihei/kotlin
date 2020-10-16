@@ -17,13 +17,15 @@ abstract class SourceFilePreprocessor {
     abstract fun process(file: TestFile, content: FileContent): FileContent
 }
 
-abstract class SourceFileProvider {
+abstract class SourceFileProvider : TestService {
     abstract val kotlinSourceDirectory: File
     abstract val javaSourceDirectory: File
 
     abstract fun getContentOfSourceFile(testFile: TestFile): String
     abstract fun getRealFileForSourceFile(testFile: TestFile): File
 }
+
+val TestServices.sourceFileProvider: SourceFileProvider by TestServices.testServiceAccessor()
 
 class SourceFileProviderImpl(val preprocessors: List<SourceFilePreprocessor>) : SourceFileProvider() {
     override val kotlinSourceDirectory: File = KotlinTestUtils.tmpDir("java-files")

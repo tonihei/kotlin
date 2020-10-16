@@ -19,21 +19,21 @@ import org.jetbrains.kotlin.test.components.*
 import org.jetbrains.kotlin.test.model.*
 
 class FirFrontendFacade(
-    configurationComponents: ConfigurationComponents
-) : FrontendFacade<FirSourceArtifact>(configurationComponents, FrontendKind.FIR) {
+    testServices: TestServices
+) : FrontendFacade<FirSourceArtifact>(testServices, FrontendKind.FIR) {
     override val additionalServices: List<ServiceRegistrationData>
         get() = listOf(serviceRegistrationData(::FirModuleInfoProvider))
 
-    override fun analyze(module: TestModule, testServices: TestServices): FirSourceArtifact {
+    override fun analyze(module: TestModule): FirSourceArtifact {
         val moduleInfoProvider = testServices.firModuleInfoProvider
-        val environment = configurationComponents.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
+        val environment = testServices.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
         // TODO: add configurable parser
 
         val project = environment.project
 
         PsiElementFinder.EP.getPoint(project).unregisterExtension(JavaElementFinder::class.java)
 
-        val ktFiles = configurationComponents.sourceFileProvider.getKtFilesForSourceFiles(module.files, project).values
+        val ktFiles = testServices.sourceFileProvider.getKtFilesForSourceFiles(module.files, project).values
 
         val sessionProvider = moduleInfoProvider.firSessionProvider
 

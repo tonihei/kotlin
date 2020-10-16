@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.test.components.*
 import org.jetbrains.kotlin.test.impl.TestConfigurationImpl
 import org.jetbrains.kotlin.test.model.*
 
-typealias Constructor<T> = (ConfigurationComponents) -> T
+typealias Constructor<T> = () -> T
 
 class TestConfigurationBuilder {
     lateinit var defaultsProvider: DefaultsProvider

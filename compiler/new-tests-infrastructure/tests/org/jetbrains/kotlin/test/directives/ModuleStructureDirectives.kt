@@ -5,9 +5,6 @@
 
 package org.jetbrains.kotlin.test.directives
 
-import org.jetbrains.kotlin.test.model.BackendKind
-import org.jetbrains.kotlin.test.model.FrontendKind
-
 object ModuleStructureDirectives : SimpleDirectivesContainer() {
     val module = valueDirective(
         name = "MODULE",

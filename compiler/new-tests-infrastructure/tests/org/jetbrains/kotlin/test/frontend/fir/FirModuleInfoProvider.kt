@@ -8,14 +8,12 @@ package org.jetbrains.kotlin.test.frontend.fir
 import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
 import org.jetbrains.kotlin.fir.session.FirJvmModuleInfo
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.components.TestService
 import org.jetbrains.kotlin.test.components.TestServices
 import org.jetbrains.kotlin.test.components.dependencyProvider
 import org.jetbrains.kotlin.test.model.TestModule
 
 class FirModuleInfoProvider(
-    private val components: ConfigurationComponents,
     private val testServices: TestServices
 ) : TestService {
     val firSessionProvider = FirProjectSessionProvider()

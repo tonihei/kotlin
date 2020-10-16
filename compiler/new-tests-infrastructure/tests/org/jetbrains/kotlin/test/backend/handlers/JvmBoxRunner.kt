@@ -12,16 +12,15 @@ import org.jetbrains.kotlin.codegen.GeneratedClassLoader
 import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil.getFileClassInfoNoResolve
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.test.components.Assertions
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
+import org.jetbrains.kotlin.test.components.TestServices
 import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.lang.reflect.Method
 import java.net.URLClassLoader
 
 class JvmBoxRunner(
-    configurationComponents: ConfigurationComponents
-) : JvmBinaryArtifactsResultsHandler(configurationComponents) {
+    testServices: TestServices
+) : JvmBinaryArtifactsResultsHandler(testServices) {
     companion object {
         private val BOX_IN_SEPARATE_PROCESS_PORT = System.getProperty("kotlin.test.box.in.separate.process.port")
     }

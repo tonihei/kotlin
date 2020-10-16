@@ -24,12 +24,13 @@ class DefaultsProvider(
     private val defaultLanguageSettingsBuilder: LanguageVersionSettingsBuilder,
     val defaultPlatform: TargetPlatform,
     val defaultDependencyKind: DependencyKind
-) {
+) : TestService {
     fun newLanguageSettingsBuilder(): LanguageVersionSettingsBuilder {
         return LanguageVersionSettingsBuilder.fromExistingSettings(defaultLanguageSettingsBuilder)
     }
 }
 
+val TestServices.defaultsProvider: DefaultsProvider by TestServices.testServiceAccessor()
+
 @DslMarker
 annotation class DefaultsDsl
-

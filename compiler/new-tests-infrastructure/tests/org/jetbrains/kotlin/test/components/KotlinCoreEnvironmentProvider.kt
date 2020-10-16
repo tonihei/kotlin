@@ -26,11 +26,13 @@ import org.jetbrains.kotlin.test.model.TestModule
 /*
  * TODO: add components which additionally configure KotlinCoreEnvironment and CompilerConfiguration
  */
-abstract class KotlinCoreEnvironmentProvider {
+abstract class KotlinCoreEnvironmentProvider : TestService {
     abstract val testRootDisposable: Disposable
 
     abstract fun getKotlinCoreEnvironment(module: TestModule): KotlinCoreEnvironment
 }
+
+val TestServices.kotlinCoreEnvironmentProvider: KotlinCoreEnvironmentProvider by TestServices.testServiceAccessor()
 
 class KotlinCoreEnvironmentProviderImpl(
     val sourceFileProvider: SourceFileProvider,

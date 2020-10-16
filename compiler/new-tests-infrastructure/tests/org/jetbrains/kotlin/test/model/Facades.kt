@@ -5,37 +5,36 @@
 
 package org.jetbrains.kotlin.test.model
 
-import org.jetbrains.kotlin.test.components.ConfigurationComponents
 import org.jetbrains.kotlin.test.components.ServiceRegistrationData
 import org.jetbrains.kotlin.test.components.TestServices
 
 abstract class FrontendFacade<R : ResultingArtifact.Source<R>>(
-    val configurationComponents: ConfigurationComponents,
+    val testServices: TestServices,
     val frontendKind: FrontendKind<R>
 ) {
-    abstract fun analyze(module: TestModule, testServices: TestServices): R
+    abstract fun analyze(module: TestModule): R
 
     open val additionalServices: List<ServiceRegistrationData>
         get() = emptyList()
 }
 
 abstract class Frontend2BackendConverter<R : ResultingArtifact.Source<R>, I : ResultingArtifact.BackendInputInfo<I>>(
-    val configurationComponents: ConfigurationComponents,
+    val testServices: TestServices,
     val frontendKind: FrontendKind<R>,
     val backendKind: BackendKind<I>
 ) {
-    abstract fun convert(module: TestModule, frontendResults: R, testServices: TestServices): I
+    abstract fun convert(module: TestModule, frontendResults: R): I
 
     open val additionalServices: List<ServiceRegistrationData>
         get() = emptyList()
 }
 
 abstract class BackendFacade<I : ResultingArtifact.BackendInputInfo<I>, A : ResultingArtifact.Binary<A>>(
-    val configurationComponents: ConfigurationComponents,
+    val testServices: TestServices,
     val backendKind: BackendKind<I>,
     val artifactKind: ArtifactKind<A>
 ) {
-    abstract fun produce(module: TestModule, initialInfo: I, testServices: TestServices): A
+    abstract fun produce(module: TestModule, initialInfo: I): A
 
     open val additionalServices: List<ServiceRegistrationData>
         get() = emptyList()

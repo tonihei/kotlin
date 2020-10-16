@@ -18,11 +18,11 @@ abstract class DependencyProvider : TestService {
 val TestServices.dependencyProvider: DependencyProvider by TestServices.testServiceAccessor()
 
 class DependencyProviderImpl(
-    val configurationComponents: ConfigurationComponents,
+    val testServices: TestServices,
     testModules: List<TestModule>
 ) : DependencyProvider() {
     private val assertions: Assertions
-        get() = configurationComponents.assertions
+        get() = testServices.assertions
 
     private val testModulesByName = testModules.map { it.name to it }.toMap()
     private val frontendArtifactsByModule: MutableMap<TestModule, MutableMap<FrontendKind<*>, ResultingArtifact.Source<*>>> = mutableMapOf()
