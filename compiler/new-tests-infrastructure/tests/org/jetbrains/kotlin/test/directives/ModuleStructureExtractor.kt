@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.builders.LanguageVersionSettingsBuilder
 import org.jetbrains.kotlin.test.model.*
+import org.jetbrains.kotlin.utils.DFS
 import java.io.File
 
 class ModuleStructureExtractor private constructor(
@@ -76,7 +77,38 @@ class ModuleStructureExtractor private constructor(
             }
         }
         finishModule()
-        return TestModuleStructure(modules, globalDirectives ?: RegisteredDirectives.Empty, testDataFiles)
+        val sortedModules = sortModules(modules)
+        checkCycles(modules)
+        return TestModuleStructure(sortedModules, globalDirectives ?: RegisteredDirectives.Empty, testDataFiles)
+    }
+
+    private fun sortModules(modules: List<TestModule>): List<TestModule> {
+        val moduleByName = modules.groupBy { it.name }.mapValues { (name, modules) ->
+            modules.singleOrNull() ?: error("Duplicated modules with name $name")
+        }
+        return DFS.topologicalOrder(modules) { module ->
+            module.dependencies.map {
+                val moduleName = it.moduleName
+                moduleByName[moduleName] ?: error("Module \"$moduleName\" not found while observing dependencies of \"${module.name}\"")
+            }
+        }.asReversed()
+    }
+
+    private fun checkCycles(modules: List<TestModule>) {
+        val visited = mutableSetOf<String>()
+        for (module in modules) {
+            val moduleName = module.name
+            visited.add(moduleName)
+            for (dependency in module.dependencies) {
+                val dependencyName = dependency.moduleName
+                if (dependencyName == moduleName) {
+                    error("Module $moduleName has dependency to itself")
+                }
+                if (dependencyName !in visited) {
+                    error("There is cycle in modules dependencies. See modules: $dependencyName, $moduleName")
+                }
+            }
+        }
     }
 
     /*
