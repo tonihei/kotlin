@@ -22,7 +22,7 @@ class FirFrontendFacade(
     testServices: TestServices
 ) : FrontendFacade<FirSourceArtifact>(testServices, FrontendKind.FIR) {
     override val additionalServices: List<ServiceRegistrationData>
-        get() = listOf(serviceRegistrationData(::FirModuleInfoProvider))
+        get() = listOf(service(::FirModuleInfoProvider))
 
     override fun analyze(module: TestModule): FirSourceArtifact {
         val moduleInfoProvider = testServices.firModuleInfoProvider

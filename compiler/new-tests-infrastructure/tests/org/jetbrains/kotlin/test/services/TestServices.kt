@@ -17,7 +17,7 @@ data class ServiceRegistrationData(
     val serviceConstructor: (TestServices) -> TestService
 )
 
-inline fun <reified T : TestService> serviceRegistrationData(
+inline fun <reified T : TestService> service(
     noinline serviceConstructor: (TestServices) -> T
 ): ServiceRegistrationData {
     return ServiceRegistrationData(T::class, serviceConstructor)

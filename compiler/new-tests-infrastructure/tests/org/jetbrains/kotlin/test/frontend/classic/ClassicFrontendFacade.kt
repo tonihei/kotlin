@@ -20,7 +20,7 @@ class ClassicFrontendFacade(
     testServices: TestServices
 ) : FrontendFacade<ClassicFrontendSourceArtifacts>(testServices, FrontendKind.ClassicFrontend) {
     override val additionalServices: List<ServiceRegistrationData>
-        get() = listOf(serviceRegistrationData(::ModuleDescriptorProvider))
+        get() = listOf(service(::ModuleDescriptorProvider))
 
     override fun analyze(module: TestModule): ClassicFrontendSourceArtifacts {
         val dependencyProvider = testServices.dependencyProvider
