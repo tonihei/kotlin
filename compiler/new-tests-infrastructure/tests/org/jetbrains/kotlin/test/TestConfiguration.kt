@@ -6,7 +6,7 @@
 package org.jetbrains.kotlin.test
 
 import com.intellij.openapi.Disposable
-import org.jetbrains.kotlin.test.components.TestServices
+import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.model.*
 
 abstract class TestConfiguration {

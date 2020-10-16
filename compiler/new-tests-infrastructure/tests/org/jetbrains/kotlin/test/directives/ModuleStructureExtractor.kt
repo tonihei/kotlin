@@ -6,7 +6,7 @@
 package org.jetbrains.kotlin.test.directives
 
 import org.jetbrains.kotlin.platform.TargetPlatform
-import org.jetbrains.kotlin.test.components.*
+import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.builders.LanguageVersionSettingsBuilder
 import org.jetbrains.kotlin.test.model.*
 import java.io.File

@@ -11,8 +11,8 @@ import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.fir.PrivateForInline
 import org.jetbrains.kotlin.platform.TargetPlatform
-import org.jetbrains.kotlin.test.components.DefaultsDsl
-import org.jetbrains.kotlin.test.components.DefaultsProvider
+import org.jetbrains.kotlin.test.services.DefaultsDsl
+import org.jetbrains.kotlin.test.services.DefaultsProvider
 import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.DependencyKind
 import org.jetbrains.kotlin.test.model.FrontendKind

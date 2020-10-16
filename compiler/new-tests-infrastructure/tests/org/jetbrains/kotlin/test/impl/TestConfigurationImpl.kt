@@ -7,7 +7,7 @@ package org.jetbrains.kotlin.test.impl
 
 import com.intellij.openapi.Disposable
 import org.jetbrains.kotlin.test.TestConfiguration
-import org.jetbrains.kotlin.test.components.*
+import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.builders.Constructor
 import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.test.util.TestDisposable

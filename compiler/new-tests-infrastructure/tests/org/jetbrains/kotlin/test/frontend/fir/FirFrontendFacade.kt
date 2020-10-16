@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.fir.analysis.FirAnalyzerFacade
 import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
 import org.jetbrains.kotlin.fir.session.FirJvmModuleInfo
 import org.jetbrains.kotlin.fir.session.FirSessionFactory
-import org.jetbrains.kotlin.test.components.*
+import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.model.*
 
 class FirFrontendFacade(

@@ -5,9 +5,9 @@
 
 package org.jetbrains.kotlin.test.model
 
-import org.jetbrains.kotlin.test.components.Assertions
-import org.jetbrains.kotlin.test.components.TestServices
-import org.jetbrains.kotlin.test.components.assertions
+import org.jetbrains.kotlin.test.services.Assertions
+import org.jetbrains.kotlin.test.services.TestServices
+import org.jetbrains.kotlin.test.services.assertions
 
 sealed class AnalysisHandler<in I>(val testServices: TestServices) {
     protected val assertions: Assertions

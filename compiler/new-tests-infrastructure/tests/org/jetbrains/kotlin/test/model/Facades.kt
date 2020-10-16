@@ -5,8 +5,8 @@
 
 package org.jetbrains.kotlin.test.model
 
-import org.jetbrains.kotlin.test.components.ServiceRegistrationData
-import org.jetbrains.kotlin.test.components.TestServices
+import org.jetbrains.kotlin.test.services.ServiceRegistrationData
+import org.jetbrains.kotlin.test.services.TestServices
 
 abstract class FrontendFacade<R : ResultingArtifact.Source<R>>(
     val testServices: TestServices,

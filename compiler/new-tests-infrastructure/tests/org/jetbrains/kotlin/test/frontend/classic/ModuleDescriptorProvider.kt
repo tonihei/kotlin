@@ -7,9 +7,9 @@ package org.jetbrains.kotlin.test.frontend.classic
 
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl
-import org.jetbrains.kotlin.test.components.TestService
-import org.jetbrains.kotlin.test.components.TestServices
-import org.jetbrains.kotlin.test.components.assertions
+import org.jetbrains.kotlin.test.services.TestService
+import org.jetbrains.kotlin.test.services.TestServices
+import org.jetbrains.kotlin.test.services.assertions
 import org.jetbrains.kotlin.test.model.TestModule
 
 class ModuleDescriptorProvider(

@@ -6,7 +6,7 @@
 package org.jetbrains.kotlin.test.frontend.classic
 
 import org.jetbrains.kotlin.test.backend.classic.ClassicBackendInputInfo
-import org.jetbrains.kotlin.test.components.TestServices
+import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.model.*
 
 class ClassicFrontend2ClassicBackendConverter(

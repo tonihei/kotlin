@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.codegen.GeneratedClassLoader
 import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil.getFileClassInfoNoResolve
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.test.components.TestServices
+import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.lang.reflect.Method

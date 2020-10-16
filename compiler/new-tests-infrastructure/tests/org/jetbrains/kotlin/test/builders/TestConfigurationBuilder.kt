@@ -6,7 +6,7 @@
 package org.jetbrains.kotlin.test.builders
 
 import org.jetbrains.kotlin.test.TestConfiguration
-import org.jetbrains.kotlin.test.components.*
+import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.impl.TestConfigurationImpl
 import org.jetbrains.kotlin.test.model.*
 

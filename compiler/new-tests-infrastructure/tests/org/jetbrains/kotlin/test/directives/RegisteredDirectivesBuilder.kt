@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.test.directives
 
-import org.jetbrains.kotlin.test.components.Assertions
+import org.jetbrains.kotlin.test.services.Assertions
 
 class RegisteredDirectivesBuilder(private val container: DirectivesContainer, private val assertions: Assertions) {
     companion object {

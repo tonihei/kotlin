@@ -6,7 +6,7 @@
 package org.jetbrains.kotlin.test.builders
 
 import org.jetbrains.kotlin.config.*
-import org.jetbrains.kotlin.test.components.DefaultsDsl
+import org.jetbrains.kotlin.test.services.DefaultsDsl
 
 @DefaultsDsl
 class LanguageVersionSettingsBuilder {
