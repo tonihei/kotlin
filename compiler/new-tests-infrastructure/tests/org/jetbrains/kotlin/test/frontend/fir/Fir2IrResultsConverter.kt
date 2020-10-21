@@ -20,8 +20,9 @@ class Fir2IrResultsConverter(
 ) {
     override fun convert(
         module: TestModule,
-        frontendResults: FirSourceArtifact
+        frontendResults: ResultingArtifact.Source<FirSourceArtifact>
     ): IrBackendInputInfo {
+        require(frontendResults is FirSourceArtifact)
         val (irModuleFragment, symbolTable, sourceManager, components) = frontendResults.firAnalyzerFacade.convertToIr()
         return IrBackendInputInfo(
             irModuleFragment,

@@ -18,8 +18,9 @@ class ClassicFrontend2ClassicBackendConverter(
 ) {
     override fun convert(
         module: TestModule,
-        frontendResults: ClassicFrontendSourceArtifacts
+        frontendResults: ResultingArtifact.Source<ClassicFrontendSourceArtifacts>
     ): ClassicBackendInputInfo {
+        require(frontendResults is ClassicFrontendSourceArtifacts)
         val (psiFiles, analysisResults, project, languageVersionSettings) = frontendResults
         return ClassicBackendInputInfo(
             psiFiles.values,

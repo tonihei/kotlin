@@ -29,8 +29,11 @@ abstract class TestConfiguration {
         artifactKind: ArtifactKind<A>
     ): BackendFacade<I, A>
 
-    abstract fun getAllFrontendHandlers(): List<FrontendResultsHandler<*>>
     abstract fun <R : ResultingArtifact.Source<R>> getFrontendHandlers(frontendKind: FrontendKind<R>): List<FrontendResultsHandler<R>>
     abstract fun <I : ResultingArtifact.BackendInputInfo<I>> getBackendHandlers(backendKind: BackendKind<I>): List<BackendInitialInfoHandler<I>>
     abstract fun <A : ResultingArtifact.Binary<A>> getArtifactHandlers(artifactKind: ArtifactKind<A>): List<ArtifactsResultsHandler<A>>
+
+    abstract fun getAllFrontendHandlers(): List<FrontendResultsHandler<*>>
+    abstract fun getAllBackendHandlers(): List<BackendInitialInfoHandler<*>>
+    abstract fun getAllArtifactHandlers(): List<ArtifactsResultsHandler<*>>
 }

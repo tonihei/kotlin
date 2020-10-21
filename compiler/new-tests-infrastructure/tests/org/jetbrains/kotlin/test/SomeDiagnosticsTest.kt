@@ -7,7 +7,10 @@ package org.jetbrains.kotlin.test
 
 import com.intellij.testFramework.TestDataPath
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
-import org.jetbrains.kotlin.test.builders.testConfiguration
+import org.jetbrains.kotlin.test.backend.classic.ClassicJvmBackendFacade
+import org.jetbrains.kotlin.test.backend.handlers.JvmBoxRunner
+import org.jetbrains.kotlin.test.builders.testRunner
+import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontend2ClassicBackendConverter
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendFacade
 import org.jetbrains.kotlin.test.frontend.classic.handlers.DeclarationsDumpHandler
 import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
@@ -20,8 +23,8 @@ import org.junit.jupiter.api.Test
 
 @TestMetadata("compiler/new-tests-infrastructure/testData")
 @TestDataPath("\$PROJECT_ROOT")
-class SomeFirAnalysisTest : TestRunner() {
-    override val testConfiguration: TestConfiguration = testConfiguration {
+class SomeFirAnalysisTest {
+    private val testRunner = testRunner {
         globalDefaults {
             frontend = FrontendKind.FIR
             backend = BackendKind.NoBackend
@@ -38,14 +41,14 @@ class SomeFirAnalysisTest : TestRunner() {
     @Test
     @TestMetadata("a.kt")
     fun testA() {
-        runTest("compiler/new-tests-infrastructure/testData/a.kt")
+        testRunner.runTest("compiler/new-tests-infrastructure/testData/a.kt")
     }
 }
 
 @TestMetadata("compiler/new-tests-infrastructure/testData")
 @TestDataPath("\$PROJECT_ROOT")
-class SomeClassicAnalysisTest : TestRunner() {
-    override val testConfiguration: TestConfiguration = testConfiguration {
+class SomeClassicAnalysisTest {
+    private val testRunner = testRunner {
         globalDefaults {
             frontend = FrontendKind.ClassicFrontend
             backend = BackendKind.NoBackend
@@ -62,6 +65,33 @@ class SomeClassicAnalysisTest : TestRunner() {
     @Test
     @TestMetadata("a.kt")
     fun testA() {
-        runTest("compiler/new-tests-infrastructure/testData/a.kt")
+        testRunner.runTest("compiler/new-tests-infrastructure/testData/a.kt")
+    }
+}
+
+@TestMetadata("compiler/new-tests-infrastructure/testData")
+@TestDataPath("\$PROJECT_ROOT")
+class SomeClassicBlackBoxTest {
+    private val testRunner = testRunner {
+        globalDefaults {
+            frontend = FrontendKind.ClassicFrontend
+            backend = BackendKind.ClassicBackend
+            targetPlatform = JvmPlatforms.defaultJvmPlatform
+            dependencyKind = DependencyKind.Binary
+        }
+
+        assertions = JUnit5Assertions
+
+        useFrontendFacades(::ClassicFrontendFacade)
+        useFrontendHandlers(::DeclarationsDumpHandler)
+        useFrontend2BackendConverters(::ClassicFrontend2ClassicBackendConverter)
+        useBackendFacades(::ClassicJvmBackendFacade)
+        useArtifactsHandlers(::JvmBoxRunner)
+    }
+
+    @Test
+    @TestMetadata("boxTest.kt")
+    fun testA() {
+        testRunner.runTest("compiler/new-tests-infrastructure/testData/boxTest.kt")
     }
 }

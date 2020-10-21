@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.test.TestConfiguration
 import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.builders.Constructor
 import org.jetbrains.kotlin.test.directives.DirectivesContainer
-import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.test.util.TestDisposable
 
@@ -123,5 +122,13 @@ class TestConfigurationImpl(
 
     override fun getAllFrontendHandlers(): List<FrontendResultsHandler<*>> {
         return frontendHandlers.values.flatten()
+    }
+
+    override fun getAllBackendHandlers(): List<BackendInitialInfoHandler<*>> {
+        return backendHandlers.values.flatten()
+    }
+
+    override fun getAllArtifactHandlers(): List<ArtifactsResultsHandler<*>> {
+        return artifactsHandlers.values.flatten()
     }
 }

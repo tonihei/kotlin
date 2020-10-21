@@ -23,7 +23,7 @@ abstract class Frontend2BackendConverter<R : ResultingArtifact.Source<R>, I : Re
     val frontendKind: FrontendKind<R>,
     val backendKind: BackendKind<I>
 ) {
-    abstract fun convert(module: TestModule, frontendResults: R): I
+    abstract fun convert(module: TestModule, frontendResults: ResultingArtifact.Source<R>): I
 
     open val additionalServices: List<ServiceRegistrationData>
         get() = emptyList()
@@ -34,7 +34,7 @@ abstract class BackendFacade<I : ResultingArtifact.BackendInputInfo<I>, A : Resu
     val backendKind: BackendKind<I>,
     val artifactKind: ArtifactKind<A>
 ) {
-    abstract fun produce(module: TestModule, initialInfo: I): A
+    abstract fun produce(module: TestModule, initialInfo: ResultingArtifact.BackendInputInfo<I>): A
 
     open val additionalServices: List<ServiceRegistrationData>
         get() = emptyList()

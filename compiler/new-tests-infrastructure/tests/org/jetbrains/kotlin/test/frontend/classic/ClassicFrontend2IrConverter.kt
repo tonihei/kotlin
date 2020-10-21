@@ -32,8 +32,10 @@ class ClassicFrontend2IrConverter(
 ) {
     override fun convert(
         module: TestModule,
-        frontendResults: ClassicFrontendSourceArtifacts
+        frontendResults: ResultingArtifact.Source<ClassicFrontendSourceArtifacts>
     ): IrBackendInputInfo {
+        require(frontendResults is ClassicFrontendSourceArtifacts)
+
         val (psiFiles, analysisResult, _, languageVersionSettings) = frontendResults
         val psi2ir = Psi2IrTranslator(languageVersionSettings, Psi2IrConfiguration(ignoreErrors = false))
         val (bindingContext, moduleDescriptor, _) = analysisResult

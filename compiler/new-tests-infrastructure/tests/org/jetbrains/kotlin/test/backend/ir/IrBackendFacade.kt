@@ -5,13 +5,17 @@
 
 package org.jetbrains.kotlin.test.backend.ir
 
+import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.test.services.TestServices
-import org.jetbrains.kotlin.test.model.ArtifactKind
-import org.jetbrains.kotlin.test.model.BackendFacade
-import org.jetbrains.kotlin.test.model.BackendKind
-import org.jetbrains.kotlin.test.model.ResultingArtifact
 
 abstract class IrBackendFacade<A : ResultingArtifact.Binary<A>>(
     testServices: TestServices,
     artifactKind: ArtifactKind<A>
-) : BackendFacade<IrBackendInputInfo, A>(testServices, BackendKind.IrBackend, artifactKind)
+) : BackendFacade<IrBackendInputInfo, A>(testServices, BackendKind.IrBackend, artifactKind) {
+    override fun produce(module: TestModule, initialInfo: ResultingArtifact.BackendInputInfo<IrBackendInputInfo>): A {
+        @Suppress("UNCHECKED_CAST")
+        return produce(module, initialInfo as IrBackendInputInfo)
+    }
+
+    abstract fun produce(module: TestModule, initialInfo: IrBackendInputInfo): A
+}
