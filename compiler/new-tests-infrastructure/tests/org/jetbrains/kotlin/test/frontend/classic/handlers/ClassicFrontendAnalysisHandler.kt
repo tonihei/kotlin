@@ -5,13 +5,21 @@
 
 package org.jetbrains.kotlin.test.frontend.classic.handlers
 
-import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
 import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.model.FrontendResultsHandler
+import org.jetbrains.kotlin.test.model.ResultingArtifact
+import org.jetbrains.kotlin.test.model.TestModule
+import org.jetbrains.kotlin.test.services.TestServices
 
 abstract class ClassicFrontendAnalysisHandler(
     testServices: TestServices
-) : FrontendResultsHandler<ClassicFrontendSourceArtifacts>(testServices, FrontendKind.ClassicFrontend)
+) : FrontendResultsHandler<ClassicFrontendSourceArtifacts>(testServices, FrontendKind.ClassicFrontend) {
+    final override fun processModule(module: TestModule, info: ResultingArtifact<ClassicFrontendSourceArtifacts>) {
+        processModule(module, info as ClassicFrontendSourceArtifacts)
+    }
+
+    abstract fun processModule(module: TestModule, info: ClassicFrontendSourceArtifacts)
+}
 
 

@@ -9,6 +9,8 @@ import com.intellij.openapi.Disposable
 import org.jetbrains.kotlin.test.TestConfiguration
 import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.builders.Constructor
+import org.jetbrains.kotlin.test.directives.DirectivesContainer
+import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.test.util.TestDisposable
 
@@ -25,6 +27,7 @@ class TestConfigurationImpl(
     artifactsHandlers: List<Constructor<ArtifactsResultsHandler<*>>>,
 
     sourcePreprocessors: List<SourceFilePreprocessor>,
+    override val directives: DirectivesContainer
 ) : TestConfiguration() {
     override val rootDisposable: Disposable = TestDisposable()
 
@@ -38,13 +41,13 @@ class TestConfigurationImpl(
 
     private val frontendFacades: Map<FrontendKind<*>, FrontendFacade<*>> =
         frontendFacades
-            .map { it.invoke() }
+            .map { it.invoke(testServices) }
             .groupBy { it.frontendKind }
             .mapValues { it.value.singleOrNull() ?: manyFacadesError("frontend facades", "source -> ${it.key}") }
 
     private val frontend2BackendConverters: Map<FrontendKind<*>, Map<BackendKind<*>, Frontend2BackendConverter<*, *>>> =
         frontend2BackendConverters
-            .map { it.invoke() }
+            .map { it.invoke(testServices) }
             .groupBy { it.frontendKind }
             .mapValues { (frontendKind, converters) ->
                 converters.groupBy { it.backendKind }.mapValues {
@@ -53,7 +56,7 @@ class TestConfigurationImpl(
             }
 
     private val backendFacades: Map<BackendKind<*>, Map<ArtifactKind<*>, BackendFacade<*, *>>> = backendFacades
-        .map { it.invoke() }
+        .map { it.invoke(testServices) }
         .groupBy { it.backendKind }
         .mapValues { (backendKind, facades) ->
             facades.groupBy { it.artifactKind }.mapValues {
@@ -62,13 +65,13 @@ class TestConfigurationImpl(
         }
 
     private val frontendHandlers: Map<FrontendKind<*>, List<FrontendResultsHandler<*>>> =
-        frontendHandlers.map { it.invoke() }.groupBy { it.frontendKind }.withDefault { emptyList() }
+        frontendHandlers.map { it.invoke(testServices) }.groupBy { it.frontendKind }.withDefault { emptyList() }
 
     private val backendHandlers: Map<BackendKind<*>, List<BackendInitialInfoHandler<*>>> =
-        backendHandlers.map { it.invoke() }.groupBy { it.backendKind }.withDefault { emptyList() }
+        backendHandlers.map { it.invoke(testServices) }.groupBy { it.backendKind }.withDefault { emptyList() }
 
     private val artifactsHandlers: Map<ArtifactKind<*>, List<ArtifactsResultsHandler<*>>> =
-        artifactsHandlers.map { it.invoke() }.groupBy { it.artifactKind }.withDefault { emptyList() }
+        artifactsHandlers.map { it.invoke(testServices) }.groupBy { it.artifactKind }.withDefault { emptyList() }
 
     private fun manyFacadesError(name: String, kinds: String): Nothing {
         error("Too many $name passed for $kinds configuration")
@@ -116,5 +119,9 @@ class TestConfigurationImpl(
     override fun <A : ResultingArtifact.Binary<A>> getArtifactHandlers(artifactKind: ArtifactKind<A>): List<ArtifactsResultsHandler<A>> {
         @Suppress("UNCHECKED_CAST")
         return artifactsHandlers.getValue(artifactKind) as List<ArtifactsResultsHandler<A>>
+    }
+
+    override fun getAllFrontendHandlers(): List<FrontendResultsHandler<*>> {
+        return frontendHandlers.values.flatten()
     }
 }

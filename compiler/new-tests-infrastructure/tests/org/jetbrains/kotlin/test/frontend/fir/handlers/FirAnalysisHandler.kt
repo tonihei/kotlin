@@ -9,7 +9,15 @@ import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.model.FrontendResultsHandler
+import org.jetbrains.kotlin.test.model.ResultingArtifact
+import org.jetbrains.kotlin.test.model.TestModule
 
 abstract class FirAnalysisHandler(
     testServices: TestServices
-) : FrontendResultsHandler<FirSourceArtifact>(testServices, FrontendKind.FIR)
+) : FrontendResultsHandler<FirSourceArtifact>(testServices, FrontendKind.FIR) {
+    final override fun processModule(module: TestModule, info: ResultingArtifact<FirSourceArtifact>) {
+        processModule(module, info as FirSourceArtifact)
+    }
+
+    abstract fun processModule(module: TestModule, info: FirSourceArtifact)
+}

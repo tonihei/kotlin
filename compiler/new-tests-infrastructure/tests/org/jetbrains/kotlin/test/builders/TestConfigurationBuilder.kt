@@ -6,11 +6,14 @@
 package org.jetbrains.kotlin.test.builders
 
 import org.jetbrains.kotlin.test.TestConfiguration
+import org.jetbrains.kotlin.test.directives.ComposedDirectivesContainer
+import org.jetbrains.kotlin.test.directives.DirectivesContainer
+import org.jetbrains.kotlin.test.directives.SimpleDirectivesContainer
 import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.impl.TestConfigurationImpl
 import org.jetbrains.kotlin.test.model.*
 
-typealias Constructor<T> = () -> T
+typealias Constructor<T> = (TestServices) -> T
 
 class TestConfigurationBuilder {
     lateinit var defaultsProvider: DefaultsProvider
@@ -25,6 +28,8 @@ class TestConfigurationBuilder {
     private val artifactsHandlers: MutableList<Constructor<ArtifactsResultsHandler<*>>> = mutableListOf()
 
     private val sourcePreprocessors: MutableList<SourceFilePreprocessor> = mutableListOf()
+
+    private val directives: MutableList<DirectivesContainer> = mutableListOf()
 
     inline fun globalDefaults(init: DefaultsProviderBuilder.() -> Unit) {
         defaultsProvider = DefaultsProviderBuilder().apply(init).build()
@@ -58,7 +63,16 @@ class TestConfigurationBuilder {
         sourcePreprocessors += preprocessors
     }
 
+    fun useDirectives(vararg directives: DirectivesContainer) {
+        this.directives += directives
+    }
+
     fun build(): TestConfiguration {
+        val directivesContainer = when (directives.size) {
+            0 -> SimpleDirectivesContainer.Empty
+            1 -> directives.first()
+            else -> ComposedDirectivesContainer(directives)
+        }
         return TestConfigurationImpl(
             defaultsProvider,
             assertions,
@@ -68,7 +82,8 @@ class TestConfigurationBuilder {
             frontendHandlers,
             backendHandlers,
             artifactsHandlers,
-            sourcePreprocessors
+            sourcePreprocessors,
+            directivesContainer
         )
     }
 }

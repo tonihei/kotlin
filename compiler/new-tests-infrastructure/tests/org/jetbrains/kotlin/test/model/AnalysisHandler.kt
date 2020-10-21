@@ -9,11 +9,11 @@ import org.jetbrains.kotlin.test.services.Assertions
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
 
-sealed class AnalysisHandler<in I>(val testServices: TestServices) {
+sealed class AnalysisHandler<A : ResultingArtifact<A>>(val testServices: TestServices) {
     protected val assertions: Assertions
         get() = testServices.assertions
 
-    abstract fun processModule(module: TestModule, info: I)
+    abstract fun processModule(module: TestModule, info: ResultingArtifact<A>)
 
     abstract fun processAfterAllModules(moduleStructure: TestModuleStructure)
 }
@@ -35,12 +35,30 @@ abstract class ArtifactsResultsHandler<A : ResultingArtifact.Binary<A>>(
 
 abstract class JvmBinaryArtifactsResultsHandler(
     testServices: TestServices
-) : ArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>(testServices, ArtifactKind.Jvm)
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Jvm>(testServices, ArtifactKind.Jvm) {
+    final override fun processModule(module: TestModule, info: ResultingArtifact<ResultingArtifact.Binary.Jvm>) {
+        processModule(module, info as ResultingArtifact.Binary.Jvm)
+    }
+
+    abstract fun processModule(module: TestModule, info: ResultingArtifact.Binary.Jvm)
+}
 
 abstract class JsBinaryArtifactsResultsHandler(
     testServices: TestServices
-) : ArtifactsResultsHandler<ResultingArtifact.Binary.Js>(testServices, ArtifactKind.Js)
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Js>(testServices, ArtifactKind.Js) {
+    final override fun processModule(module: TestModule, info: ResultingArtifact<ResultingArtifact.Binary.Js>) {
+        processModule(module, info as ResultingArtifact.Binary.Js)
+    }
+
+    abstract fun processModule(module: TestModule, info: ResultingArtifact.Binary.Js)
+}
 
 abstract class NativeBinaryArtifactsResultsHandler(
     testServices: TestServices
-) : ArtifactsResultsHandler<ResultingArtifact.Binary.Native>(testServices, ArtifactKind.Native)
+) : ArtifactsResultsHandler<ResultingArtifact.Binary.Native>(testServices, ArtifactKind.Native) {
+    final override fun processModule(module: TestModule, info: ResultingArtifact<ResultingArtifact.Binary.Native>) {
+        processModule(module, info as ResultingArtifact.Binary.Native)
+    }
+
+    abstract fun processModule(module: TestModule, info: ResultingArtifact.Binary.Native)
+}

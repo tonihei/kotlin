@@ -11,16 +11,16 @@ import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
 import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 
-sealed class ResultingArtifact {
-    abstract class Source<R : Source<R>> : ResultingArtifact() {
+abstract class ResultingArtifact<A : ResultingArtifact<A>> {
+    abstract class Source<R : Source<R>> : ResultingArtifact<R>() {
         abstract val frontendKind: FrontendKind<R>
     }
 
-    abstract class BackendInputInfo<I : BackendInputInfo<I>> : ResultingArtifact() {
+    abstract class BackendInputInfo<I : BackendInputInfo<I>> : ResultingArtifact<I>() {
         abstract val backendKind: BackendKind<I>
     }
 
-    sealed class Binary<A : Binary<A>> : ResultingArtifact() {
+    abstract class Binary<A : Binary<A>> : ResultingArtifact<A>() {
         class Jvm(val classFileFactory: ClassFileFactory) : Binary<Jvm>() {
             override val artifactKind: ArtifactKind<Jvm>
                 get() = ArtifactKind.Jvm
@@ -45,7 +45,7 @@ sealed class ResultingArtifact {
     }
 }
 
-sealed class FrontendKind<R : ResultingArtifact.Source<R>> {
+abstract class FrontendKind<R : ResultingArtifact.Source<R>> {
     object ClassicFrontend : FrontendKind<ClassicFrontendSourceArtifacts>()
     object FIR : FrontendKind<FirSourceArtifact>()
 
@@ -60,7 +60,7 @@ sealed class FrontendKind<R : ResultingArtifact.Source<R>> {
     }
 }
 
-sealed class BackendKind<I : ResultingArtifact.BackendInputInfo<I>> {
+abstract class BackendKind<I : ResultingArtifact.BackendInputInfo<I>> {
     object ClassicBackend : BackendKind<ClassicBackendInputInfo>()
     object IrBackend : BackendKind<IrBackendInputInfo>()
 
@@ -75,7 +75,7 @@ sealed class BackendKind<I : ResultingArtifact.BackendInputInfo<I>> {
     }
 }
 
-sealed class ArtifactKind<A : ResultingArtifact.Binary<A>> {
+abstract class ArtifactKind<A : ResultingArtifact.Binary<A>> {
     object Jvm : ArtifactKind<ResultingArtifact.Binary.Jvm>()
     object Js : ArtifactKind<ResultingArtifact.Binary.Js>()
     object Native : ArtifactKind<ResultingArtifact.Binary.Native>()

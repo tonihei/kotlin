@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.test
 
 import com.intellij.openapi.Disposable
+import org.jetbrains.kotlin.test.directives.DirectivesContainer
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.model.*
 
@@ -13,6 +14,8 @@ abstract class TestConfiguration {
     abstract val rootDisposable: Disposable
 
     abstract val testServices: TestServices
+
+    abstract val directives: DirectivesContainer
 
     abstract fun <R : ResultingArtifact.Source<R>> getFrontendFacade(frontendKind: FrontendKind<R>): FrontendFacade<R>
 
@@ -26,6 +29,7 @@ abstract class TestConfiguration {
         artifactKind: ArtifactKind<A>
     ): BackendFacade<I, A>
 
+    abstract fun getAllFrontendHandlers(): List<FrontendResultsHandler<*>>
     abstract fun <R : ResultingArtifact.Source<R>> getFrontendHandlers(frontendKind: FrontendKind<R>): List<FrontendResultsHandler<R>>
     abstract fun <I : ResultingArtifact.BackendInputInfo<I>> getBackendHandlers(backendKind: BackendKind<I>): List<BackendInitialInfoHandler<I>>
     abstract fun <A : ResultingArtifact.Binary<A>> getArtifactHandlers(artifactKind: ArtifactKind<A>): List<ArtifactsResultsHandler<A>>

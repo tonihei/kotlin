@@ -5,147 +5,63 @@
 
 package org.jetbrains.kotlin.test
 
-//@TestMetadata("compiler/new-tests-infrastructure/testData")
-//@TestDataPath("\$PROJECT_ROOT")
-//class SomeDiagnosticsTest {
-//
-//    @Test
-//    @TestMetadata("a.kt")
-//    fun testSimpleFir() {
-//        doFirTest("compiler/new-tests-infrastructure/testData/a.kt")
-//    }
-//
-//    @Test
-//    @TestMetadata("a.kt")
-//    fun testSimpleClassicFrontend() {
-//        doClassicFrontendTest("compiler/new-tests-infrastructure/testData/a.kt")
-//    }
-//
-//    @Test
-//    @TestMetadata("boxTest.kt")
-//    fun testSimpleClassicBackend() {
-//        doClassicFrontendTest("compiler/new-tests-infrastructure/testData/boxTest.kt", withBackend = true)
-//    }
-//
-//    @Test
-//    @TestMetadata("boxTest.kt")
-//    fun testSimpleIrBackend() {
-//        doIrBlackBoxTest("compiler/new-tests-infrastructure/testData/boxTest.kt", withBackend = true)
-//    }
-//
-//    fun doClassicFrontendTest(fileName: String, withBackend: Boolean = false) {
-//        val components = createComponents()
-//        val globalFrontendHandlers = listOf(DeclarationsDumpHandler(components.assertions))
-//        val backendHandlers = listOf(JvmBoxRunner(components.assertions))
-//        val facade = ClassicFrontendFacade(components)
-//
-//        val moduleStructure = ModuleStructureExtractor.splitTestDataByModules(
-//            testDataFileName = fileName,
-//            directivesContainer = SimpleDirectivesContainer.Empty,
-//            assertions = components.assertions
-//        )
-//
-//        val dependencyProvider = ClassicDependencyProvider(components, moduleStructure.modules)
-//
-//        val frontendResults = mutableMapOf<TestModule, ClassicFrontendSourceArtifacts>()
-//        for (module in moduleStructure.modules) {
-//            val analysisResults = facade.analyze(module, dependencyProvider)
-//            frontendResults[module] = analysisResults
-//            dependencyProvider.registerAnalyzedModule(module.name, analysisResults)
-//            globalFrontendHandlers.forEach { it.processModule(module, analysisResults) }
-//        }
-//
-//        globalFrontendHandlers.forEach { it.processAfterAllModules(moduleStructure) }
-//        if (!withBackend) return
-//
-//        val frontend2BackendConverter = ClassicFrontend2ClassicBackendConverter()
-//        val backendInitialInfos = mutableMapOf<TestModule, ClassicBackendInputInfo>()
-//
-//        for ((module, sourceArtifact) in frontendResults) {
-//            val backendInfo = frontend2BackendConverter.convert(module, sourceArtifact, dependencyProvider)
-//            backendInitialInfos[module] = backendInfo
-//        }
-//
-//        val backendFacade = ClassicJvmBackendFacade(components)
-//        val backendArtifacts = mutableMapOf<TestModule, ResultingArtifact.Binary.Jvm>()
-//        for ((module, backendInfo) in backendInitialInfos) {
-//            val jvm = backendFacade.produce(module, backendInfo)
-//            backendArtifacts[module] = jvm
-//            backendHandlers.forEach { it.processModule(module, jvm) }
-//        }
-//    }
-//
-//    fun doIrBlackBoxTest(fileName: String, withBackend: Boolean = false) {
-//        val components = createComponents()
-//        val globalFrontendHandlers = listOf(DeclarationsDumpHandler(components.assertions))
-//        val backendHandlers = listOf(JvmBoxRunner(components.assertions))
-//        val facade = ClassicFrontendFacade(components)
-//
-//        val moduleStructure = ModuleStructureExtractor.splitTestDataByModules(
-//            testDataFileName = fileName,
-//            directivesContainer = SimpleDirectivesContainer.Empty,
-//            assertions = components.assertions
-//        )
-//
-//        val dependencyProvider = ClassicDependencyProvider(components, moduleStructure.modules)
-//
-//        val frontendResults = mutableMapOf<TestModule, ClassicFrontendSourceArtifacts>()
-//        for (module in moduleStructure.modules) {
-//            val analysisResults = facade.analyze(module, dependencyProvider)
-//            frontendResults[module] = analysisResults
-//            dependencyProvider.registerAnalyzedModule(module.name, analysisResults)
-//            globalFrontendHandlers.forEach { it.processModule(module, analysisResults) }
-//        }
-//
-//        globalFrontendHandlers.forEach { it.processAfterAllModules(moduleStructure) }
-//        if (!withBackend) return
-//
-//        val frontend2BackendConverter = ClassicFrontend2IrConverter()
-//        val backendInitialInfos = mutableMapOf<TestModule, IrBackendInputInfo>()
-//
-//        for ((module, sourceArtifact) in frontendResults) {
-//            val backendInfo = frontend2BackendConverter.convert(module, sourceArtifact, dependencyProvider)
-//            backendInitialInfos[module] = backendInfo
-//        }
-//
-//        val backendFacade = JvmIrBackendFacade(components)
-//        val backendArtifacts = mutableMapOf<TestModule, ResultingArtifact.Binary.Jvm>()
-//        for ((module, backendInfo) in backendInitialInfos) {
-//            val jvm = backendFacade.produce(module, backendInfo)
-//            backendArtifacts[module] = jvm
-//            backendHandlers.forEach { it.processModule(module, jvm) }
-//        }
-//    }
-//
-//
-//    fun doFirTest(fileName: String) {
-//        val components = createComponents()
-//
-//        val globalHandlers = listOf(FirDumpHandler(components.assertions))
-//
-//        val facade = FirFrontendFacade(components)
-//
-//        val moduleStructure = ModuleStructureExtractor.splitTestDataByModules(
-//            testDataFileName = fileName,
-//            directivesContainer = SimpleDirectivesContainer.Empty,
-//            assertions = components.assertions
-//        )
-//
-//        val dependencyProvider = FirDependencyProvider(components, moduleStructure.modules)
-//
-//        for (module in moduleStructure.modules) {
-//            val analysisResults = facade.analyze(module, dependencyProvider)
-//            dependencyProvider.registerAnalyzedModule(module.name, analysisResults)
-//            globalHandlers.forEach { it.processModule(module, analysisResults) }
-//        }
-//
-//        globalHandlers.forEach { it.processAfterAllModules(moduleStructure) }
-//    }
-//
-//    private fun createComponents(): ConfigurationComponents = ConfigurationComponents.build {
-//        kotlinCoreEnvironmentProvider = KotlinCoreEnvironmentProviderImpl(this, TestDisposable())
-//        sourceFileProvider = SourceFileProviderImpl(emptyList())
-//        languageVersionSettingsProvider = LanguageVersionSettingsProviderImpl()
-//        assertions = JUnit5Assertions
-//    }
-//}
+import com.intellij.testFramework.TestDataPath
+import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
+import org.jetbrains.kotlin.test.builders.testConfiguration
+import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendFacade
+import org.jetbrains.kotlin.test.frontend.classic.handlers.DeclarationsDumpHandler
+import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
+import org.jetbrains.kotlin.test.frontend.fir.handlers.FirDumpHandler
+import org.jetbrains.kotlin.test.model.BackendKind
+import org.jetbrains.kotlin.test.model.DependencyKind
+import org.jetbrains.kotlin.test.model.FrontendKind
+import org.jetbrains.kotlin.test.services.JUnit5Assertions
+import org.junit.jupiter.api.Test
+
+@TestMetadata("compiler/new-tests-infrastructure/testData")
+@TestDataPath("\$PROJECT_ROOT")
+class SomeFirAnalysisTest : TestRunner() {
+    override val testConfiguration: TestConfiguration = testConfiguration {
+        globalDefaults {
+            frontend = FrontendKind.FIR
+            backend = BackendKind.IrBackend
+            targetPlatform = JvmPlatforms.defaultJvmPlatform
+            dependencyKind = DependencyKind.Source
+        }
+
+        assertions = JUnit5Assertions
+
+        useFrontendFacades(::FirFrontendFacade)
+        useFrontendHandlers(::FirDumpHandler)
+    }
+
+    @Test
+    @TestMetadata("a.kt")
+    fun testA() {
+        runTest("compiler/new-tests-infrastructure/testData/a.kt")
+    }
+}
+
+@TestMetadata("compiler/new-tests-infrastructure/testData")
+@TestDataPath("\$PROJECT_ROOT")
+class SomeClassicAnalysisTest : TestRunner() {
+    override val testConfiguration: TestConfiguration = testConfiguration {
+        globalDefaults {
+            frontend = FrontendKind.ClassicFrontend
+            backend = BackendKind.ClassicBackend
+            targetPlatform = JvmPlatforms.defaultJvmPlatform
+            dependencyKind = DependencyKind.Source
+        }
+
+        assertions = JUnit5Assertions
+
+        useFrontendFacades(::ClassicFrontendFacade)
+        useFrontendHandlers(::DeclarationsDumpHandler)
+    }
+
+    @Test
+    @TestMetadata("a.kt")
+    fun testA() {
+        runTest("compiler/new-tests-infrastructure/testData/a.kt")
+    }
+}

@@ -45,3 +45,7 @@ class TestServices : ComponentArrayOwner<TestService, TestService>(){
         data.forEach { register(it) }
     }
 }
+
+fun TestServices.registerDependencyProvider(dependencyProvider: DependencyProvider) {
+    register(DependencyProvider::class, dependencyProvider)
+}
