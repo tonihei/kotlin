@@ -25,6 +25,9 @@ abstract class TestRunner {
         services.registerDependencyProvider(dependencyProvider)
         for (module in modules) {
             val frontendKind = module.frontendKind
+            if (!frontendKind.shouldRunAnalysis) {
+                continue
+            }
             val frontendFacade: FrontendFacade<*> = testConfiguration.getFrontendFacade(frontendKind)
             val frontendArtifacts = frontendFacade.analyze(module)
             dependencyProvider.registerSourceArtifact(module, frontendArtifacts)
@@ -41,45 +44,33 @@ abstract class TestRunner {
 
 // ----------------------------------------------------------------------------------------------------------------
 /*
- * Those classes and [hackyProcess] methods are needed for hack kotlin type system. In common test case
+ * Those `hackyProcess` methods are needed to hack kotlin type system. In common test case
  *   we have artifact of type ResultingArtifact<*> and handler of type AnalysisHandler<*> and actually
  *   at runtime types under `*` are same (that achieved by grouping handlers and facades by
- *   frontend/backend/artifact kind). But there is no way to tell that to compiler, so I created dummy kinds
- *   and dummy artifacts so I can unsafely cast types with `*` to types with dummies.
+ *   frontend/backend/artifact kind). But there is no way to tell that to compiler, so I unsafely cast types with `*`
+ *   to types with Empty artifacts to make it compile. Since unsafe cast has no effort at runtime, it's safe to use it
  */
-
-private class DummySourceArtifact : ResultingArtifact.Source<DummySourceArtifact>() {
-    override val frontendKind: FrontendKind<DummySourceArtifact>
-        get() = DummyFrontendKind
-}
-
-private object DummyFrontendKind : FrontendKind<DummySourceArtifact>()
 
 private fun hackyProcess(module: TestModule, handler: FrontendResultsHandler<*>, artifact: ResultingArtifact.Source<*>) {
     @Suppress("UNCHECKED_CAST")
-    (handler as FrontendResultsHandler<DummySourceArtifact>).processModule(module, artifact as ResultingArtifact<DummySourceArtifact>)
+    (handler as FrontendResultsHandler<ResultingArtifact.Source.Empty>).processModule(
+        module,
+        artifact as ResultingArtifact<ResultingArtifact.Source.Empty>
+    )
 }
-
-private class DummyBackendInitialInfo : ResultingArtifact.BackendInputInfo<DummyBackendInitialInfo>() {
-    override val backendKind: BackendKind<DummyBackendInitialInfo>
-        get() = DummyBackendKind
-}
-
-private object DummyBackendKind : BackendKind<DummyBackendInitialInfo>()
 
 private fun hackyProcess(module: TestModule, handler: BackendInitialInfoHandler<*>, artifact: ResultingArtifact.BackendInputInfo<*>) {
     @Suppress("UNCHECKED_CAST")
-    (handler as BackendInitialInfoHandler<DummyBackendInitialInfo>).processModule(module, artifact as ResultingArtifact<DummyBackendInitialInfo>)
+    (handler as BackendInitialInfoHandler<ResultingArtifact.BackendInputInfo.Empty>).processModule(
+        module,
+        artifact as ResultingArtifact<ResultingArtifact.BackendInputInfo.Empty>
+    )
 }
-
-private class DummyBinaryArtifact : ResultingArtifact.Binary<DummyBinaryArtifact>() {
-    override val artifactKind: ArtifactKind<DummyBinaryArtifact>
-        get() = DummyArtifactKind
-}
-
-private object DummyArtifactKind : ArtifactKind<DummyBinaryArtifact>()
 
 private fun hackyProcess(module: TestModule, handler: ArtifactsResultsHandler<*>, artifact: ResultingArtifact.Binary<*>) {
     @Suppress("UNCHECKED_CAST")
-    (handler as ArtifactsResultsHandler<DummyBinaryArtifact>).processModule(module, artifact as ResultingArtifact<DummyBinaryArtifact>)
+    (handler as ArtifactsResultsHandler<ResultingArtifact.Binary.Empty>).processModule(
+        module,
+        artifact as ResultingArtifact<ResultingArtifact.Binary.Empty>
+    )
 }

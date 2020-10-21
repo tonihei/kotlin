@@ -14,10 +14,20 @@ import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 abstract class ResultingArtifact<A : ResultingArtifact<A>> {
     abstract class Source<R : Source<R>> : ResultingArtifact<R>() {
         abstract val frontendKind: FrontendKind<R>
+
+        object Empty : Source<Empty>() {
+            override val frontendKind: FrontendKind<Empty>
+                get() = FrontendKind.NoFrontend
+        }
     }
 
     abstract class BackendInputInfo<I : BackendInputInfo<I>> : ResultingArtifact<I>() {
         abstract val backendKind: BackendKind<I>
+
+        object Empty : BackendInputInfo<Empty>() {
+            override val backendKind: BackendKind<Empty>
+                get() = BackendKind.NoBackend
+        }
     }
 
     abstract class Binary<A : Binary<A>> : ResultingArtifact<A>() {
@@ -41,6 +51,11 @@ abstract class ResultingArtifact<A : ResultingArtifact<A>> {
                 get() = ArtifactKind.KLib
         }
 
+        object Empty : Binary<Empty>() {
+            override val artifactKind: ArtifactKind<Empty>
+                get() = ArtifactKind.NoArtifact
+        }
+
         abstract val artifactKind: ArtifactKind<A>
     }
 }
@@ -48,6 +63,14 @@ abstract class ResultingArtifact<A : ResultingArtifact<A>> {
 abstract class FrontendKind<R : ResultingArtifact.Source<R>> {
     object ClassicFrontend : FrontendKind<ClassicFrontendSourceArtifacts>()
     object FIR : FrontendKind<FirSourceArtifact>()
+
+    object NoFrontend : FrontendKind<ResultingArtifact.Source.Empty>() {
+        override val shouldRunAnalysis: Boolean
+            get() = false
+    }
+
+    open val shouldRunAnalysis: Boolean
+        get() = true
 
     companion object {
         fun fromString(string: String): FrontendKind<*>? {
@@ -63,6 +86,14 @@ abstract class FrontendKind<R : ResultingArtifact.Source<R>> {
 abstract class BackendKind<I : ResultingArtifact.BackendInputInfo<I>> {
     object ClassicBackend : BackendKind<ClassicBackendInputInfo>()
     object IrBackend : BackendKind<IrBackendInputInfo>()
+
+    object NoBackend : BackendKind<ResultingArtifact.BackendInputInfo.Empty>() {
+        override val shouldRunAnalysis: Boolean
+            get() = false
+    }
+
+    open val shouldRunAnalysis: Boolean
+        get() = true
 
     companion object {
         fun fromString(string: String): BackendKind<*>? {
@@ -80,6 +111,14 @@ abstract class ArtifactKind<A : ResultingArtifact.Binary<A>> {
     object Js : ArtifactKind<ResultingArtifact.Binary.Js>()
     object Native : ArtifactKind<ResultingArtifact.Binary.Native>()
     object KLib : ArtifactKind<ResultingArtifact.Binary.KLib>()
+
+    object NoArtifact : ArtifactKind<ResultingArtifact.Binary.Empty>() {
+        override val shouldRunAnalysis: Boolean
+            get() = false
+    }
+
+    open val shouldRunAnalysis: Boolean
+        get() = true
 
     companion object {
         fun fromString(string: String): ArtifactKind<*>? {

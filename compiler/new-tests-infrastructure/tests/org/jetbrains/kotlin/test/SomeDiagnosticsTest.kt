@@ -24,7 +24,7 @@ class SomeFirAnalysisTest : TestRunner() {
     override val testConfiguration: TestConfiguration = testConfiguration {
         globalDefaults {
             frontend = FrontendKind.FIR
-            backend = BackendKind.IrBackend
+            backend = BackendKind.NoBackend
             targetPlatform = JvmPlatforms.defaultJvmPlatform
             dependencyKind = DependencyKind.Source
         }
@@ -48,7 +48,7 @@ class SomeClassicAnalysisTest : TestRunner() {
     override val testConfiguration: TestConfiguration = testConfiguration {
         globalDefaults {
             frontend = FrontendKind.ClassicFrontend
-            backend = BackendKind.ClassicBackend
+            backend = BackendKind.NoBackend
             targetPlatform = JvmPlatforms.defaultJvmPlatform
             dependencyKind = DependencyKind.Source
         }
