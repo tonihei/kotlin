@@ -31,33 +31,82 @@ class EnumValueDirective<T : Enum<T>>(
 
 // --------------------------- Registered directive ---------------------------
 
-class RegisteredDirectives(
+abstract class RegisteredDirectives {
+    companion object {
+        val Empty = RegisteredDirectivesImpl(emptyList(), emptyMap(), emptyMap())
+    }
+
+    abstract operator fun contains(directive: SimpleDirective): Boolean
+    abstract operator fun get(directive: StringValueDirective): List<String>
+    abstract operator fun <T : Enum<T>> get(directive: EnumValueDirective<T>): List<T>
+
+    abstract fun isEmpty(): Boolean
+}
+
+class RegisteredDirectivesImpl(
     private val simpleDirectives: List<SimpleDirective>,
     private val stringValueDirectives: Map<StringValueDirective, List<String>>,
     private val enumValueDirectives: Map<EnumValueDirective<*>, List<Enum<*>>>
-) {
-    companion object {
-        val Empty = RegisteredDirectives(emptyList(), emptyMap(), emptyMap())
-    }
-
-    operator fun contains(directive: SimpleDirective): Boolean {
+) : RegisteredDirectives() {
+    override operator fun contains(directive: SimpleDirective): Boolean {
         return directive in simpleDirectives
     }
 
-    operator fun get(directive: StringValueDirective): List<String> {
+    override operator fun get(directive: StringValueDirective): List<String> {
         return stringValueDirectives[directive] ?: emptyList()
     }
 
-    operator fun <T : Enum<T>> get(directive: EnumValueDirective<T>): List<T> {
+    override operator fun <T : Enum<T>> get(directive: EnumValueDirective<T>): List<T> {
         @Suppress("UNCHECKED_CAST")
         return enumValueDirectives[directive] as List<T>? ?: emptyList()
+    }
+
+    override fun isEmpty(): Boolean {
+        return simpleDirectives.isEmpty() && stringValueDirectives.isEmpty() && enumValueDirectives.isEmpty()
     }
 
     override fun toString(): String {
         return buildString {
             simpleDirectives.forEach { appendLine("  $it") }
-            stringValueDirectives.forEach { (d, v) -> appendLine("  $d: ${v.toArrayString()}") }
-            enumValueDirectives.forEach { (d, v) -> appendLine("  $d: ${v.toArrayString()}") }
+            stringValueDirectives.forEach { (d, v) -> appendLine("  $d: ${v.joinToArrayString()}") }
+            enumValueDirectives.forEach { (d, v) -> appendLine("  $d: ${v.joinToArrayString()}") }
         }
+    }
+}
+
+class ComposedRegisteredDirectives private constructor(
+    private val containers: List<RegisteredDirectives>
+) : RegisteredDirectives() {
+    companion object {
+        operator fun invoke(vararg containers: RegisteredDirectives): RegisteredDirectives {
+            val notEmptyContainers = containers.filterNot { it.isEmpty() }
+            return when (notEmptyContainers.size) {
+                0 -> Empty
+                1 -> notEmptyContainers.single()
+                else -> ComposedRegisteredDirectives(notEmptyContainers)
+            }
+        }
+    }
+
+    override fun contains(directive: SimpleDirective): Boolean {
+        return containers.any { directive in it }
+    }
+
+    override fun get(directive: StringValueDirective): List<String> {
+        for (container in containers) {
+            container[directive].takeIf { it.isNotEmpty() }?.let { return it }
+        }
+        return emptyList()
+    }
+
+    override fun <T : Enum<T>> get(directive: EnumValueDirective<T>): List<T> {
+        for (container in containers) {
+            container[directive].takeIf { it.isNotEmpty() }?.let { return it }
+        }
+        return emptyList()
+    }
+
+    override fun isEmpty(): Boolean {
+        return containers.all { it.isEmpty() }
     }
 }

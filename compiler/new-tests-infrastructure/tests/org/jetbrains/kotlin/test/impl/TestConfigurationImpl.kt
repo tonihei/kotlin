@@ -7,11 +7,12 @@ package org.jetbrains.kotlin.test.impl
 
 import com.intellij.openapi.Disposable
 import org.jetbrains.kotlin.test.TestConfiguration
-import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.builders.Constructor
 import org.jetbrains.kotlin.test.directives.ComposedDirectivesContainer
 import org.jetbrains.kotlin.test.directives.DirectivesContainer
+import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import org.jetbrains.kotlin.test.model.*
+import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.services.configuration.EnvironmentConfigurator
 import org.jetbrains.kotlin.test.util.TestDisposable
 
@@ -29,7 +30,8 @@ class TestConfigurationImpl(
 
     sourcePreprocessors: List<SourceFilePreprocessor>,
     environmentConfigurators: List<Constructor<EnvironmentConfigurator>>,
-    directives: List<DirectivesContainer>
+    directives: List<DirectivesContainer>,
+    override val defaultRegisteredDirectives: RegisteredDirectives
 ) : TestConfiguration() {
     override val rootDisposable: Disposable = TestDisposable()
     override val testServices: TestServices = TestServices()
@@ -37,6 +39,7 @@ class TestConfigurationImpl(
 
     init {
         val allDirectives = directives.toMutableList()
+        allDirectives += defaultDirectiveContainers
 
         testServices.apply {
             val sourceFileProvider = SourceFileProviderImpl(sourcePreprocessors)
@@ -53,6 +56,8 @@ class TestConfigurationImpl(
 
             register(Assertions::class, assertions)
             register(DefaultsProvider::class, defaultsProvider)
+
+            register(DefaultRegisteredDirectivesProvider::class, DefaultRegisteredDirectivesProvider(this, defaultRegisteredDirectives))
         }
 
         this.directives = when (allDirectives.size) {

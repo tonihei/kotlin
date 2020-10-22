@@ -12,14 +12,9 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
-import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
-import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoot
-import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
-import org.jetbrains.kotlin.config.JVMConfigurationKeys
-import org.jetbrains.kotlin.test.KotlinTestUtils
 import org.jetbrains.kotlin.test.model.TestFile
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.configuration.EnvironmentConfigurator
@@ -66,19 +61,6 @@ class KotlinCoreEnvironmentProviderImpl(
 
             override fun hasErrors(): Boolean = false
         }
-
-        // TODO: add parsing flags from directives
-        // see org/jetbrains/kotlin/test/KotlinBaseTest.kt:93
-        configuration[JVMConfigurationKeys.IR, false]
-
-        module.javaFiles.takeIf { it.isNotEmpty() }?.let { javaFiles ->
-            val files = javaFiles.map { sourceFileProvider.getRealFileForSourceFile(it) }
-            configuration.addJavaSourceRoots(files)
-        }
-
-        configuration.addJvmClasspathRoot(KotlinTestUtils.findMockJdkRtJar())
-        configuration.addJvmClasspathRoot(ForTestCompileRuntime.minimalRuntimeJarForTests())
-        configuration[JVMConfigurationKeys.NO_JDK] = true
 
         configurators.forEach { it.configureCompilerConfiguration(configuration, module) }
 

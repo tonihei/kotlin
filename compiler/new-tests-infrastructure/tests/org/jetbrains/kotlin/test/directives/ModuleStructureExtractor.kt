@@ -6,9 +6,9 @@
 package org.jetbrains.kotlin.test.directives
 
 import org.jetbrains.kotlin.platform.TargetPlatform
-import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.builders.LanguageVersionSettingsBuilder
 import org.jetbrains.kotlin.test.model.*
+import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.utils.DFS
 import java.io.File
 
@@ -245,7 +245,7 @@ class ModuleStructureExtractor private constructor(
     private fun validateFileName(fileName: String) {
         if (!allowedExtensionsForFiles.any { fileName.endsWith(it) }) {
             assertions.fail {
-                "Filename $fileName is not valid. Allowed extensions: ${allowedExtensionsForFiles.toArrayString()}"
+                "Filename $fileName is not valid. Allowed extensions: ${allowedExtensionsForFiles.joinToArrayString()}"
             }
         }
     }
@@ -255,8 +255,8 @@ class ModuleStructureExtractor private constructor(
     }
 }
 
-fun Iterable<*>.toArrayString(): String = joinToString(separator = ", ", prefix = "[", postfix = "]")
-fun Array<*>.toArrayString(): String = joinToString(separator = ", ", prefix = "[", postfix = "]")
+fun Iterable<*>.joinToArrayString(): String = joinToString(separator = ", ", prefix = "[", postfix = "]")
+fun Array<*>.joinToArrayString(): String = joinToString(separator = ", ", prefix = "[", postfix = "]")
 
 inline fun <reified T : Enum<T>> valueOfOrNull(value: String): T? {
     for (enumValue in enumValues<T>()) {

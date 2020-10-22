@@ -7,15 +7,23 @@ package org.jetbrains.kotlin.test
 
 import com.intellij.openapi.Disposable
 import org.jetbrains.kotlin.test.directives.DirectivesContainer
-import org.jetbrains.kotlin.test.services.TestServices
+import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import org.jetbrains.kotlin.test.model.*
+import org.jetbrains.kotlin.test.services.TestServices
+import org.jetbrains.kotlin.test.services.configuration.ConfigurationDirectives
 
 abstract class TestConfiguration {
+    companion object {
+        val defaultDirectiveContainers = listOf(ConfigurationDirectives)
+    }
+
     abstract val rootDisposable: Disposable
 
     abstract val testServices: TestServices
 
     abstract val directives: DirectivesContainer
+
+    abstract val defaultRegisteredDirectives: RegisteredDirectives
 
     abstract fun <R : ResultingArtifact.Source<R>> getFrontendFacade(frontendKind: FrontendKind<R>): FrontendFacade<R>
 

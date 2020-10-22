@@ -7,11 +7,14 @@ package org.jetbrains.kotlin.test.services.configuration
 
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.test.directives.ComposedRegisteredDirectives
 import org.jetbrains.kotlin.test.directives.DirectivesContainer
+import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.model.TestModuleStructure
 import org.jetbrains.kotlin.test.model.moduleStructure
 import org.jetbrains.kotlin.test.services.TestServices
+import org.jetbrains.kotlin.test.services.defaultDirectives
 
 abstract class EnvironmentConfigurator(protected val testServices: TestServices) {
     open val directivesContainer: DirectivesContainer
@@ -19,6 +22,9 @@ abstract class EnvironmentConfigurator(protected val testServices: TestServices)
 
     protected val moduleStructure: TestModuleStructure
         get() = testServices.moduleStructure
+
+    protected val TestModule.allRegisteredDirectives: RegisteredDirectives
+        get() = ComposedRegisteredDirectives(directives, testServices.defaultDirectives)
 
     open fun configureEnvironment(environment: KotlinCoreEnvironment, module: TestModule) {}
 

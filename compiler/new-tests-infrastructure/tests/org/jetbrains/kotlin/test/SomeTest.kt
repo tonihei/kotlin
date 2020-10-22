@@ -9,6 +9,7 @@ import com.intellij.testFramework.TestDataPath
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.test.backend.classic.ClassicJvmBackendFacade
 import org.jetbrains.kotlin.test.backend.handlers.JvmBoxRunner
+import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.builders.testRunner
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontend2ClassicBackendConverter
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendFacade
@@ -19,12 +20,13 @@ import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.DependencyKind
 import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.services.JUnit5Assertions
+import org.jetbrains.kotlin.test.services.configuration.JvmEnvironmentConfigurator
 import org.junit.jupiter.api.Test
 
 @TestMetadata("compiler/new-tests-infrastructure/testData")
 @TestDataPath("\$PROJECT_ROOT")
-class SomeFirAnalysisTest {
-    private val testRunner = testRunner {
+class SomeTest {
+    private val firAnalysisConfiguration: TestConfigurationBuilder.() -> Unit = {
         globalDefaults {
             frontend = FrontendKind.FIR
             backend = BackendKind.NoBackend
@@ -34,21 +36,19 @@ class SomeFirAnalysisTest {
 
         assertions = JUnit5Assertions
 
+        useConfigurators(::JvmEnvironmentConfigurator)
+
         useFrontendFacades(::FirFrontendFacade)
         useFrontendHandlers(::FirDumpHandler)
     }
 
     @Test
     @TestMetadata("a.kt")
-    fun testA() {
-        testRunner.runTest("compiler/new-tests-infrastructure/testData/a.kt")
+    fun testFirAnalysisA() {
+        testRunner(firAnalysisConfiguration).runTest("compiler/new-tests-infrastructure/testData/a.kt")
     }
-}
 
-@TestMetadata("compiler/new-tests-infrastructure/testData")
-@TestDataPath("\$PROJECT_ROOT")
-class SomeClassicAnalysisTest {
-    private val testRunner = testRunner {
+    private val classicAnalysisConfiguration: TestConfigurationBuilder.() -> Unit = {
         globalDefaults {
             frontend = FrontendKind.ClassicFrontend
             backend = BackendKind.NoBackend
@@ -58,21 +58,19 @@ class SomeClassicAnalysisTest {
 
         assertions = JUnit5Assertions
 
+        useConfigurators(::JvmEnvironmentConfigurator)
+
         useFrontendFacades(::ClassicFrontendFacade)
         useFrontendHandlers(::DeclarationsDumpHandler)
     }
 
     @Test
     @TestMetadata("a.kt")
-    fun testA() {
-        testRunner.runTest("compiler/new-tests-infrastructure/testData/a.kt")
+    fun testClassicAnalysisA() {
+        testRunner(classicAnalysisConfiguration).runTest("compiler/new-tests-infrastructure/testData/a.kt")
     }
-}
 
-@TestMetadata("compiler/new-tests-infrastructure/testData")
-@TestDataPath("\$PROJECT_ROOT")
-class SomeClassicBlackBoxTest {
-    private val testRunner = testRunner {
+    private val blackBoxRunnerConfiguration: TestConfigurationBuilder.() -> Unit = {
         globalDefaults {
             frontend = FrontendKind.ClassicFrontend
             backend = BackendKind.ClassicBackend
@@ -82,6 +80,8 @@ class SomeClassicBlackBoxTest {
 
         assertions = JUnit5Assertions
 
+        useConfigurators(::JvmEnvironmentConfigurator)
+
         useFrontendFacades(::ClassicFrontendFacade)
         useFrontendHandlers(::DeclarationsDumpHandler)
         useFrontend2BackendConverters(::ClassicFrontend2ClassicBackendConverter)
@@ -89,9 +89,22 @@ class SomeClassicBlackBoxTest {
         useArtifactsHandlers(::JvmBoxRunner)
     }
 
+
     @Test
     @TestMetadata("boxTest.kt")
-    fun testA() {
-        testRunner.runTest("compiler/new-tests-infrastructure/testData/boxTest.kt")
+    fun testBBBoxTest() {
+        testRunner(blackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/boxTest.kt")
+    }
+
+    @Test
+    @TestMetadata("boxWithRuntimeTest.kt")
+    fun testBBBoxWithRuntimeTest() {
+        testRunner(blackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/boxWithRuntimeTest.kt")
+    }
+
+    @Test
+    @TestMetadata("boxWithJdkTest.kt")
+    fun testBBBoxWithJdkTest() {
+        testRunner(blackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/boxWithJdkTest.kt")
     }
 }

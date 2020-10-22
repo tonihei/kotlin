@@ -2,6 +2,7 @@
 // !LANGUAGE: +NewInference
 // !DIAGNOSTICS: -UNUSED_PARAMETER
 // !USE_EXPERIMENTAL: kotlin.RequiresOptIn
+// FULL_JDK
 
 import kotlin.experimental.ExperimentalTypeInference
 

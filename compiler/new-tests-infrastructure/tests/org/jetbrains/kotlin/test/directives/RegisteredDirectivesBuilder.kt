@@ -82,7 +82,7 @@ class RegisteredDirectivesBuilder(private val container: DirectivesContainer, pr
                 }
                 rawValues.map {
                     directive.extractValue(it) ?: assertions.fail {
-                        "$it is not valid value for $directive. Acceptable values: ${directive.possibleValues.toArrayString()}"
+                        "$it is not valid value for $directive. Acceptable values: ${directive.possibleValues.joinToArrayString()}"
                     }
                 }
             }
@@ -95,6 +95,6 @@ class RegisteredDirectivesBuilder(private val container: DirectivesContainer, pr
     }
 
     fun build(): RegisteredDirectives {
-        return RegisteredDirectives(simpleDirectives, stringValueDirectives, enumValueDirectives)
+        return RegisteredDirectivesImpl(simpleDirectives, stringValueDirectives, enumValueDirectives)
     }
 }
