@@ -6,13 +6,13 @@
 package org.jetbrains.kotlin.test.directives
 
 sealed class DirectivesContainer {
+    object Empty : SimpleDirectivesContainer()
+
     abstract operator fun get(name: String): Directive?
     abstract operator fun contains(directive: Directive): Boolean
 }
 
 abstract class SimpleDirectivesContainer : DirectivesContainer() {
-    object Empty : SimpleDirectivesContainer()
-
     private val registeredDirectives: MutableMap<String, Directive> = mutableMapOf()
 
     override operator fun get(name: String): Directive? = registeredDirectives[name]

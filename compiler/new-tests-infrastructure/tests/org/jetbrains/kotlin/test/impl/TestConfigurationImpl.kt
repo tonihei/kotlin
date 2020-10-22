@@ -9,8 +9,10 @@ import com.intellij.openapi.Disposable
 import org.jetbrains.kotlin.test.TestConfiguration
 import org.jetbrains.kotlin.test.services.*
 import org.jetbrains.kotlin.test.builders.Constructor
+import org.jetbrains.kotlin.test.directives.ComposedDirectivesContainer
 import org.jetbrains.kotlin.test.directives.DirectivesContainer
 import org.jetbrains.kotlin.test.model.*
+import org.jetbrains.kotlin.test.services.configuration.EnvironmentConfigurator
 import org.jetbrains.kotlin.test.util.TestDisposable
 
 class TestConfigurationImpl(
@@ -26,16 +28,38 @@ class TestConfigurationImpl(
     artifactsHandlers: List<Constructor<ArtifactsResultsHandler<*>>>,
 
     sourcePreprocessors: List<SourceFilePreprocessor>,
-    override val directives: DirectivesContainer
+    environmentConfigurators: List<Constructor<EnvironmentConfigurator>>,
+    directives: List<DirectivesContainer>
 ) : TestConfiguration() {
     override val rootDisposable: Disposable = TestDisposable()
+    override val testServices: TestServices = TestServices()
+    override val directives: DirectivesContainer
 
-    override val testServices: TestServices = TestServices().apply {
-        val sourceFileProvider = SourceFileProviderImpl(sourcePreprocessors)
-        register(SourceFileProvider::class, sourceFileProvider)
-        register(KotlinCoreEnvironmentProvider::class, KotlinCoreEnvironmentProviderImpl(sourceFileProvider, rootDisposable))
-        register(Assertions::class, assertions)
-        register(DefaultsProvider::class, defaultsProvider)
+    init {
+        val allDirectives = directives.toMutableList()
+
+        testServices.apply {
+            val sourceFileProvider = SourceFileProviderImpl(sourcePreprocessors)
+            register(SourceFileProvider::class, sourceFileProvider)
+
+            val configurators = environmentConfigurators.map { it.invoke(this) }
+            configurators.mapTo(allDirectives) { it.directivesContainer }
+            val environmentProvider = KotlinCoreEnvironmentProviderImpl(
+                sourceFileProvider,
+                rootDisposable,
+                configurators
+            )
+            register(KotlinCoreEnvironmentProvider::class, environmentProvider)
+
+            register(Assertions::class, assertions)
+            register(DefaultsProvider::class, defaultsProvider)
+        }
+
+        this.directives = when (allDirectives.size) {
+            0 -> DirectivesContainer.Empty
+            1 -> allDirectives.single()
+            else -> ComposedDirectivesContainer(allDirectives)
+        }
     }
 
     private val frontendFacades: Map<FrontendKind<*>, FrontendFacade<*>> =
