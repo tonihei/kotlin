@@ -5,22 +5,26 @@
 
 package org.jetbrains.kotlin.test.backend.ir
 
+import org.jetbrains.kotlin.backend.common.phaser.PhaseConfig
+import org.jetbrains.kotlin.backend.jvm.JvmGeneratorExtensions
 import org.jetbrains.kotlin.backend.jvm.MetadataSerializerFactory
-import org.jetbrains.kotlin.codegen.JvmBackendClassResolver
+import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
+import org.jetbrains.kotlin.ir.linkage.IrProvider
 import org.jetbrains.kotlin.ir.util.SymbolTable
-import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi2ir.PsiSourceManager
 import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 
 // IR backend (JVM, JS, Native)
 data class IrBackendInputInfo(
+    val state: GenerationState,
     val irModuleFragment: IrModuleFragment,
     val symbolTable: SymbolTable,
     val sourceManager: PsiSourceManager,
-    val jvmBackendClassResolver: JvmBackendClassResolver,
-    val ktFiles: Collection<KtFile>,
+    val phaseConfig: PhaseConfig,
+    val irProviders: List<IrProvider>,
+    val extensions: JvmGeneratorExtensions,
     val serializerFactory: MetadataSerializerFactory
 ) : ResultingArtifact.BackendInputInfo<IrBackendInputInfo>() {
     override val backendKind: BackendKind.IrBackend

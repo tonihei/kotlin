@@ -9,9 +9,11 @@ import com.intellij.testFramework.TestDataPath
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.test.backend.classic.ClassicJvmBackendFacade
 import org.jetbrains.kotlin.test.backend.handlers.JvmBoxRunner
+import org.jetbrains.kotlin.test.backend.ir.JvmIrBackendFacade
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.builders.testRunner
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontend2ClassicBackendConverter
+import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontend2IrConverter
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendFacade
 import org.jetbrains.kotlin.test.frontend.classic.handlers.DeclarationsDumpHandler
 import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
@@ -73,7 +75,7 @@ class SomeTest {
     private val blackBoxRunnerConfiguration: TestConfigurationBuilder.() -> Unit = {
         globalDefaults {
             frontend = FrontendKind.ClassicFrontend
-            backend = BackendKind.ClassicBackend
+            backend = BackendKind.IrBackend
             targetPlatform = JvmPlatforms.defaultJvmPlatform
             dependencyKind = DependencyKind.Binary
         }
@@ -84,11 +86,10 @@ class SomeTest {
 
         useFrontendFacades(::ClassicFrontendFacade)
         useFrontendHandlers(::DeclarationsDumpHandler)
-        useFrontend2BackendConverters(::ClassicFrontend2ClassicBackendConverter)
-        useBackendFacades(::ClassicJvmBackendFacade)
+        useFrontend2BackendConverters(::ClassicFrontend2ClassicBackendConverter, ::ClassicFrontend2IrConverter)
+        useBackendFacades(::ClassicJvmBackendFacade, ::JvmIrBackendFacade)
         useArtifactsHandlers(::JvmBoxRunner)
     }
-
 
     @Test
     @TestMetadata("boxTest.kt")

@@ -51,7 +51,6 @@ class TestConfigurationImpl(
                 configurator.additionalServices.forEach { register(it) }
             }
             val environmentProvider = KotlinCoreEnvironmentProviderImpl(
-                sourceFileProvider,
                 rootDisposable,
                 configurators
             )

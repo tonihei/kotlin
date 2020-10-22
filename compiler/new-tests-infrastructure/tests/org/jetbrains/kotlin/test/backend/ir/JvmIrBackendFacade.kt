@@ -5,23 +5,11 @@
 
 package org.jetbrains.kotlin.test.backend.ir
 
-import org.jetbrains.kotlin.backend.common.phaser.PhaseConfig
 import org.jetbrains.kotlin.backend.jvm.JvmBackendFacade
-import org.jetbrains.kotlin.backend.jvm.JvmGeneratorExtensions
-import org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory
-import org.jetbrains.kotlin.backend.jvm.jvmPhases
-import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
-import org.jetbrains.kotlin.cli.jvm.compiler.NoScopeRecordCliBindingTrace
-import org.jetbrains.kotlin.codegen.ClassBuilderFactories
-import org.jetbrains.kotlin.codegen.state.GenerationState
-import org.jetbrains.kotlin.ir.descriptors.IrFunctionFactory
-import org.jetbrains.kotlin.ir.util.generateTypicalIrProviderList
-import org.jetbrains.kotlin.modules.TargetId
-import org.jetbrains.kotlin.test.services.TestServices
-import org.jetbrains.kotlin.test.services.kotlinCoreEnvironmentProvider
 import org.jetbrains.kotlin.test.model.ArtifactKind
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
+import org.jetbrains.kotlin.test.services.TestServices
 
 class JvmIrBackendFacade(
     testServices: TestServices
@@ -30,37 +18,10 @@ class JvmIrBackendFacade(
         module: TestModule,
         initialInfo: IrBackendInputInfo
     ): ResultingArtifact.Binary.Jvm {
-        val environment = testServices.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module)
-        val compilerConfiguration = environment.configuration
-        val (irModuleFragment, symbolTable, sourceManager, jvmBackendClassResolver, ktFiles, serializerFactory) = initialInfo
-
-        val phaseConfig = compilerConfiguration.get(CLIConfigurationKeys.PHASE_CONFIG) ?: PhaseConfig(jvmPhases)
-        val codegenFactory = JvmIrCodegenFactory(phaseConfig)
-
-        val generationState = GenerationState.Builder(
-            environment.project, ClassBuilderFactories.TEST,
-            irModuleFragment.descriptor,
-            NoScopeRecordCliBindingTrace().bindingContext,
-            ktFiles.toList(),
-            compilerConfiguration
-        ).codegenFactory(
-            codegenFactory
-        ).withModule(
-            module
-        ).isIrBackend(
-            true
-        ).jvmBackendClassResolver(
-            jvmBackendClassResolver
-        ).build()
-
-        irModuleFragment.irBuiltins.functionFactory = IrFunctionFactory(irModuleFragment.irBuiltins, symbolTable)
-        val extensions = JvmGeneratorExtensions()
-        val irProviders = generateTypicalIrProviderList(
-            irModuleFragment.descriptor, irModuleFragment.irBuiltins, symbolTable, extensions = extensions
-        )
+        val (state, irModuleFragment, symbolTable, sourceManager, phaseConfig, irProviders, extensions, serializerFactory) = initialInfo
 
         JvmBackendFacade.doGenerateFilesInternal(
-            generationState,
+            state,
             irModuleFragment,
             symbolTable,
             sourceManager,
@@ -69,13 +30,8 @@ class JvmIrBackendFacade(
             extensions,
             serializerFactory
         )
-        generationState.factory.done()
+        state.factory.done()
 
-        return ResultingArtifact.Binary.Jvm(generationState.factory)
-    }
-
-    private fun GenerationState.Builder.withModule(module: TestModule): GenerationState.Builder = apply {
-        targetId(TargetId(module.name, "test"))
-        moduleName(module.name)
+        return ResultingArtifact.Binary.Jvm(state.factory)
     }
 }

@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
+import org.jetbrains.kotlin.config.languageVersionSettings
 import org.jetbrains.kotlin.test.model.TestFile
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.configuration.EnvironmentConfigurator
@@ -26,12 +27,15 @@ abstract class KotlinCoreEnvironmentProvider : TestService {
     abstract val testRootDisposable: Disposable
 
     abstract fun getKotlinCoreEnvironment(module: TestModule): KotlinCoreEnvironment
+
+    fun getCompilerConfiguration(module: TestModule): CompilerConfiguration {
+        return getKotlinCoreEnvironment(module).configuration
+    }
 }
 
 val TestServices.kotlinCoreEnvironmentProvider: KotlinCoreEnvironmentProvider by TestServices.testServiceAccessor()
 
 class KotlinCoreEnvironmentProviderImpl(
-    private val sourceFileProvider: SourceFileProvider,
     override val testRootDisposable: Disposable,
     private val configurators: List<EnvironmentConfigurator>
 ) : KotlinCoreEnvironmentProvider() {
@@ -61,6 +65,7 @@ class KotlinCoreEnvironmentProviderImpl(
 
             override fun hasErrors(): Boolean = false
         }
+        configuration.languageVersionSettings = module.languageVersionSettings
 
         configurators.forEach { it.configureCompilerConfiguration(configuration, module) }
 

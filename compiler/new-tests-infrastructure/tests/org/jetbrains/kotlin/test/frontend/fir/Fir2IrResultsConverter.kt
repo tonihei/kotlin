@@ -5,11 +5,9 @@
 
 package org.jetbrains.kotlin.test.frontend.fir
 
-import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendClassResolver
-import org.jetbrains.kotlin.fir.backend.jvm.FirMetadataSerializer
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInputInfo
-import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.model.*
+import org.jetbrains.kotlin.test.services.TestServices
 
 class Fir2IrResultsConverter(
     testServices: TestServices
@@ -22,16 +20,17 @@ class Fir2IrResultsConverter(
         module: TestModule,
         frontendResults: ResultingArtifact.Source<FirSourceArtifact>
     ): IrBackendInputInfo {
-        require(frontendResults is FirSourceArtifact)
-        val (irModuleFragment, symbolTable, sourceManager, components) = frontendResults.firAnalyzerFacade.convertToIr()
-        return IrBackendInputInfo(
-            irModuleFragment,
-            symbolTable,
-            sourceManager,
-            FirJvmBackendClassResolver(components),
-            frontendResults.firAnalyzerFacade.ktFiles
-        ) { context, irClass, _, serializationBindings, parent ->
-            FirMetadataSerializer(frontendResults.session, context, irClass, serializationBindings, parent)
-        }
+        TODO()
+//        require(frontendResults is FirSourceArtifact)
+//        val (irModuleFragment, symbolTable, sourceManager, components) = frontendResults.firAnalyzerFacade.convertToIr()
+//        return IrBackendInputInfo(
+//            irModuleFragment,
+//            symbolTable,
+//            sourceManager,
+//            FirJvmBackendClassResolver(components),
+//            frontendResults.firAnalyzerFacade.ktFiles
+//        ) { context, irClass, _, serializationBindings, parent ->
+//            FirMetadataSerializer(frontendResults.session, context, irClass, serializationBindings, parent)
+//        }
     }
 }
