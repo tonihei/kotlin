@@ -11,13 +11,15 @@ import org.jetbrains.kotlin.platform.js.JsPlatforms
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.platform.konan.NativePlatforms
 import org.jetbrains.kotlin.test.directives.RegisteredDirectives
+import org.jetbrains.kotlin.test.services.TestService
+import org.jetbrains.kotlin.test.services.TestServices
 import java.io.File
 
 data class TestModuleStructure(
     val modules: List<TestModule>,
     val globalDirectives: RegisteredDirectives,
     val originalTestDataFiles: List<File>
-) {
+) : TestService {
     @OptIn(ExperimentalStdlibApi::class)
     private val targetArtifactsByModule: Map<String, List<ArtifactKind<*>>> = buildMap {
         for (module in modules) {
@@ -55,6 +57,8 @@ data class TestModuleStructure(
         }
     }
 }
+
+val TestServices.moduleStructure: TestModuleStructure by TestServices.testServiceAccessor()
 
 data class TestModule(
     val name: String,

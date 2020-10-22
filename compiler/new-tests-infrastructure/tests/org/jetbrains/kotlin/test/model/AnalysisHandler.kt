@@ -13,9 +13,12 @@ sealed class AnalysisHandler<A : ResultingArtifact<A>>(val testServices: TestSer
     protected val assertions: Assertions
         get() = testServices.assertions
 
+    protected val moduleStructure: TestModuleStructure
+        get() = testServices.moduleStructure
+
     abstract fun processModule(module: TestModule, info: ResultingArtifact<A>)
 
-    abstract fun processAfterAllModules(moduleStructure: TestModuleStructure)
+    abstract fun processAfterAllModules()
 }
 
 abstract class FrontendResultsHandler<R : ResultingArtifact.Source<R>>(

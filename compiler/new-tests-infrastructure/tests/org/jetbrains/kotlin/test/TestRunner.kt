@@ -17,7 +17,10 @@ class TestRunner(private val testConfiguration: TestConfiguration) {
             testDataFileName,
             testConfiguration.directives,
             services
-        )
+        ).also {
+            services.register(TestModuleStructure::class, it)
+        }
+
         val modules = moduleStructure.modules
         val dependencyProvider = DependencyProviderImpl(services, modules)
         services.registerDependencyProvider(dependencyProvider)
@@ -59,13 +62,13 @@ class TestRunner(private val testConfiguration: TestConfiguration) {
             }
         }
         for (frontendHandler in testConfiguration.getAllFrontendHandlers()) {
-            frontendHandler.processAfterAllModules(moduleStructure)
+            frontendHandler.processAfterAllModules()
         }
         for (backendHandler in testConfiguration.getAllBackendHandlers()) {
-            backendHandler.processAfterAllModules(moduleStructure)
+            backendHandler.processAfterAllModules()
         }
         for (artifactHandler in testConfiguration.getAllArtifactHandlers()) {
-            artifactHandler.processAfterAllModules(moduleStructure)
+            artifactHandler.processAfterAllModules()
         }
     }
 }

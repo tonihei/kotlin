@@ -10,17 +10,17 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.test.directives.DirectivesContainer
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.model.TestModuleStructure
+import org.jetbrains.kotlin.test.model.moduleStructure
 import org.jetbrains.kotlin.test.services.TestServices
 
 abstract class EnvironmentConfigurator(protected val testServices: TestServices) {
     open val directivesContainer: DirectivesContainer
         get() = DirectivesContainer.Empty
 
-    open fun configureEnvironment(environment: KotlinCoreEnvironment, module: TestModule, moduleStructure: TestModuleStructure) {}
+    protected val moduleStructure: TestModuleStructure
+        get() = testServices.moduleStructure
 
-    open fun configureCompilerConfiguration(
-        configuration: CompilerConfiguration,
-        module: TestModule,
-        moduleStructure: TestModuleStructure
-    ) {}
+    open fun configureEnvironment(environment: KotlinCoreEnvironment, module: TestModule) {}
+
+    open fun configureCompilerConfiguration(configuration: CompilerConfiguration, module: TestModule) {}
 }

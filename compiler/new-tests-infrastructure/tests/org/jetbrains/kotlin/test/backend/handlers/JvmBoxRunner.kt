@@ -12,8 +12,10 @@ import org.jetbrains.kotlin.codegen.GeneratedClassLoader
 import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil.getFileClassInfoNoResolve
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.test.model.JvmBinaryArtifactsResultsHandler
+import org.jetbrains.kotlin.test.model.ResultingArtifact
+import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.TestServices
-import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.lang.reflect.Method
 import java.net.URLClassLoader
@@ -27,7 +29,7 @@ class JvmBoxRunner(
 
     private var boxMethodFound = false
 
-    override fun processAfterAllModules(moduleStructure: TestModuleStructure) {
+    override fun processAfterAllModules() {
         if (!boxMethodFound) {
             assertions.fail { "Can't find box methods" }
         }

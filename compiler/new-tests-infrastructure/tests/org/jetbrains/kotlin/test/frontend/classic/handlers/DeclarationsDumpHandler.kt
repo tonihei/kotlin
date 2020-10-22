@@ -11,11 +11,10 @@ import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.DescriptorUtils
-import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendSourceArtifacts
 import org.jetbrains.kotlin.test.model.TestFile
 import org.jetbrains.kotlin.test.model.TestModule
-import org.jetbrains.kotlin.test.model.TestModuleStructure
+import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.util.DescriptorValidator
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumper
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumperImpl
@@ -29,7 +28,7 @@ class DeclarationsDumpHandler(
 ) : ClassicFrontendAnalysisHandler(testServices) {
     private val dumper: MultiModuleInfoDumper = MultiModuleInfoDumperImpl()
 
-    override fun processAfterAllModules(moduleStructure: TestModuleStructure) {
+    override fun processAfterAllModules() {
         val resultDump = dumper.generateResultingDump()
         val testDataFile = moduleStructure.originalTestDataFiles.first()
         val expectedFileName = testDataFile.nameWithoutExtension + ".txt"

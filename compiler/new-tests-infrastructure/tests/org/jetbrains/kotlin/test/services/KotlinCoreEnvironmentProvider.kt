@@ -22,7 +22,6 @@ import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.test.KotlinTestUtils
 import org.jetbrains.kotlin.test.model.TestFile
 import org.jetbrains.kotlin.test.model.TestModule
-import org.jetbrains.kotlin.test.model.TestModuleStructure
 import org.jetbrains.kotlin.test.services.configuration.EnvironmentConfigurator
 
 /*
@@ -31,7 +30,7 @@ import org.jetbrains.kotlin.test.services.configuration.EnvironmentConfigurator
 abstract class KotlinCoreEnvironmentProvider : TestService {
     abstract val testRootDisposable: Disposable
 
-    abstract fun getKotlinCoreEnvironment(module: TestModule, moduleStructure: TestModuleStructure): KotlinCoreEnvironment
+    abstract fun getKotlinCoreEnvironment(module: TestModule): KotlinCoreEnvironment
 }
 
 val TestServices.kotlinCoreEnvironmentProvider: KotlinCoreEnvironmentProvider by TestServices.testServiceAccessor()
@@ -41,17 +40,17 @@ class KotlinCoreEnvironmentProviderImpl(
     override val testRootDisposable: Disposable,
     private val configurators: List<EnvironmentConfigurator>
 ) : KotlinCoreEnvironmentProvider() {
-    override fun getKotlinCoreEnvironment(module: TestModule, moduleStructure: TestModuleStructure): KotlinCoreEnvironment {
+    override fun getKotlinCoreEnvironment(module: TestModule): KotlinCoreEnvironment {
         return KotlinCoreEnvironment.createForTests(
             testRootDisposable,
-            createCompilerConfiguration(module, moduleStructure),
+            createCompilerConfiguration(module),
             EnvironmentConfigFiles.JVM_CONFIG_FILES
         ).apply {
-            configurators.forEach { it.configureEnvironment(this, module, moduleStructure) }
+            configurators.forEach { it.configureEnvironment(this, module) }
         }
     }
 
-    private fun createCompilerConfiguration(module: TestModule, moduleStructure: TestModuleStructure): CompilerConfiguration {
+    private fun createCompilerConfiguration(module: TestModule): CompilerConfiguration {
         val configuration = CompilerConfiguration()
         configuration[CommonConfigurationKeys.MODULE_NAME] = module.name
 
@@ -81,7 +80,7 @@ class KotlinCoreEnvironmentProviderImpl(
         configuration.addJvmClasspathRoot(ForTestCompileRuntime.minimalRuntimeJarForTests())
         configuration[JVMConfigurationKeys.NO_JDK] = true
 
-        configurators.forEach { it.configureCompilerConfiguration(configuration, module, moduleStructure) }
+        configurators.forEach { it.configureCompilerConfiguration(configuration, module) }
 
         return configuration
     }

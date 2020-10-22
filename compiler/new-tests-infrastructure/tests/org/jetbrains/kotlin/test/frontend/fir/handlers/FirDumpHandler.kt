@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.test.frontend.fir.handlers
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.test.frontend.fir.FirSourceArtifact
 import org.jetbrains.kotlin.test.model.TestModule
-import org.jetbrains.kotlin.test.model.TestModuleStructure
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumper
 import org.jetbrains.kotlin.test.util.MultiModuleInfoDumperImpl
@@ -24,7 +23,7 @@ class FirDumpHandler(
         firFiles.values.forEach { builderForModule.append(it.render()) }
     }
 
-    override fun processAfterAllModules(moduleStructure: TestModuleStructure) {
+    override fun processAfterAllModules() {
         // TODO: change according to multiple testdata files
         val testDataFile = moduleStructure.originalTestDataFiles.first()
         val expectedFile = testDataFile.parentFile.resolve("${testDataFile.nameWithoutExtension}.fir")
