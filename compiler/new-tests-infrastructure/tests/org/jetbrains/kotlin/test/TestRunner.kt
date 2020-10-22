@@ -8,9 +8,12 @@ package org.jetbrains.kotlin.test
 import org.jetbrains.kotlin.test.directives.ModuleStructureExtractor
 import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.test.services.DependencyProviderImpl
+import org.jetbrains.kotlin.test.services.assertions
 import org.jetbrains.kotlin.test.services.registerDependencyProvider
 
 class TestRunner(private val testConfiguration: TestConfiguration) {
+    private val failedAssertions = mutableListOf<AssertionError>()
+
     fun runTest(testDataFileName: String) {
         val services = testConfiguration.testServices
         val moduleStructure = ModuleStructureExtractor.splitTestDataByModules(
@@ -24,51 +27,69 @@ class TestRunner(private val testConfiguration: TestConfiguration) {
         val modules = moduleStructure.modules
         val dependencyProvider = DependencyProviderImpl(services, modules)
         services.registerDependencyProvider(dependencyProvider)
-        for (module in modules) {
-            val frontendKind = module.frontendKind
-            if (!frontendKind.shouldRunAnalysis) continue
+        var failedException: Throwable? = null
+        try {
+            for (module in modules) {
+                val frontendKind = module.frontendKind
+                if (!frontendKind.shouldRunAnalysis) continue
 
-            val frontendArtifacts: ResultingArtifact.Source<*> = testConfiguration.getFrontendFacade(frontendKind).analyze(module).also {
-                dependencyProvider.registerSourceArtifact(module, it)
-            }
-            val frontendHandlers: List<FrontendResultsHandler<*>> = testConfiguration.getFrontendHandlers(frontendKind)
-            for (frontendHandler in frontendHandlers) {
-                frontendHandler.hackyProcess(module, frontendArtifacts)
-            }
-
-            val backendKind = module.targetBackend
-            if (!backendKind.shouldRunAnalysis) continue
-
-            val backendInputInfo = testConfiguration.getConverter(frontendKind, backendKind).hackyConvert(module, frontendArtifacts).also {
-                dependencyProvider.registerBackendInfo(module, it)
-            }
-
-            val backendHandlers: List<BackendInitialInfoHandler<*>> = testConfiguration.getBackendHandlers(backendKind)
-            for (backendHandler in backendHandlers) {
-                backendHandler.hackyProcess(module, backendInputInfo)
-            }
-
-            for (artifactKind in moduleStructure.getTargetArtifactKinds(module)) {
-                if (!artifactKind.shouldRunAnalysis) continue
-                val binaryArtifact = testConfiguration.getBackendFacade(backendKind, artifactKind)
-                    .hackyProduce(module, backendInputInfo).also {
-                        dependencyProvider.registerBinaryArtifact(module, it)
+                val frontendArtifacts: ResultingArtifact.Source<*> = testConfiguration.getFrontendFacade(frontendKind)
+                    .analyze(module).also { dependencyProvider.registerSourceArtifact(module, it) }
+                val frontendHandlers: List<FrontendResultsHandler<*>> = testConfiguration.getFrontendHandlers(frontendKind)
+                for (frontendHandler in frontendHandlers) {
+                    withAssertionCatching {
+                        frontendHandler.hackyProcess(module, frontendArtifacts)
                     }
+                }
 
-                val binaryHandlers: List<ArtifactsResultsHandler<*>> = testConfiguration.getArtifactHandlers(artifactKind)
-                for (binaryHandler in binaryHandlers) {
-                    binaryHandler.hackyProcess(module, binaryArtifact)
+                val backendKind = module.targetBackend
+                if (!backendKind.shouldRunAnalysis) continue
+
+                val backendInputInfo = testConfiguration.getConverter(frontendKind, backendKind)
+                    .hackyConvert(module, frontendArtifacts).also { dependencyProvider.registerBackendInfo(module, it) }
+
+                val backendHandlers: List<BackendInitialInfoHandler<*>> = testConfiguration.getBackendHandlers(backendKind)
+                for (backendHandler in backendHandlers) {
+                    withAssertionCatching { backendHandler.hackyProcess(module, backendInputInfo) }
+                }
+
+                for (artifactKind in moduleStructure.getTargetArtifactKinds(module)) {
+                    if (!artifactKind.shouldRunAnalysis) continue
+                    val binaryArtifact = testConfiguration.getBackendFacade(backendKind, artifactKind)
+                        .hackyProduce(module, backendInputInfo).also {
+                            dependencyProvider.registerBinaryArtifact(module, it)
+                        }
+
+                    val binaryHandlers: List<ArtifactsResultsHandler<*>> = testConfiguration.getArtifactHandlers(artifactKind)
+                    for (binaryHandler in binaryHandlers) {
+                        withAssertionCatching { binaryHandler.hackyProcess(module, binaryArtifact) }
+                    }
                 }
             }
+        } catch (e: Throwable) {
+            failedException = e
         }
         for (frontendHandler in testConfiguration.getAllFrontendHandlers()) {
-            frontendHandler.processAfterAllModules()
+            withAssertionCatching { frontendHandler.processAfterAllModules() }
         }
         for (backendHandler in testConfiguration.getAllBackendHandlers()) {
-            backendHandler.processAfterAllModules()
+            withAssertionCatching { backendHandler.processAfterAllModules() }
         }
         for (artifactHandler in testConfiguration.getAllArtifactHandlers()) {
-            artifactHandler.processAfterAllModules()
+            withAssertionCatching { artifactHandler.processAfterAllModules() }
+        }
+        if (failedException != null) {
+            failedAssertions += AssertionError("Exception was thrown", failedException)
+        }
+
+        services.assertions.assertAll(failedAssertions)
+    }
+
+    private inline fun withAssertionCatching(block: () -> Unit) {
+        try {
+            block()
+        } catch (e: AssertionError) {
+            failedAssertions += e
         }
     }
 }
