@@ -107,4 +107,10 @@ class SomeTest {
     fun testBBBoxWithJdkTest() {
         testRunner(blackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/boxWithJdkTest.kt")
     }
+
+    @Test
+    @TestMetadata("multiModuleBox.kt")
+    fun testBBMultiModuleBox() {
+        testRunner(blackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/multiModuleBox.kt")
+    }
 }

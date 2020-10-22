@@ -47,6 +47,9 @@ class TestConfigurationImpl(
 
             val configurators = environmentConfigurators.map { it.invoke(this) }
             configurators.mapTo(allDirectives) { it.directivesContainer }
+            for (configurator in configurators) {
+                configurator.additionalServices.forEach { register(it) }
+            }
             val environmentProvider = KotlinCoreEnvironmentProviderImpl(
                 sourceFileProvider,
                 rootDisposable,

@@ -1,0 +1,9 @@
+Module: a
+package
+
+public fun foo(): kotlin.String
+
+Module: b
+package
+
+public fun box(): kotlin.String

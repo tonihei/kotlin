@@ -7,15 +7,16 @@ package org.jetbrains.kotlin.test.backend.handlers
 
 import junit.framework.TestCase
 import org.jetbrains.kotlin.backend.common.CodegenUtil.getMemberDeclarationsToGenerate
+import org.jetbrains.kotlin.cli.jvm.config.jvmClasspathRoots
 import org.jetbrains.kotlin.codegen.ClassFileFactory
 import org.jetbrains.kotlin.codegen.GeneratedClassLoader
-import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil.getFileClassInfoNoResolve
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.test.model.JvmBinaryArtifactsResultsHandler
 import org.jetbrains.kotlin.test.model.ResultingArtifact
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.TestServices
+import org.jetbrains.kotlin.test.services.kotlinCoreEnvironmentProvider
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.lang.reflect.Method
 import java.net.URLClassLoader
@@ -37,7 +38,7 @@ class JvmBoxRunner(
 
     override fun processModule(module: TestModule, info: ResultingArtifact.Binary.Jvm) {
         val ktFiles = info.classFileFactory.inputFiles
-        val classLoader = createClassLoader(info.classFileFactory)
+        val classLoader = createClassLoader(module, info.classFileFactory)
         for (ktFile in ktFiles) {
             val className = ktFile.getFacadeFqName() ?: continue
             val clazz = classLoader.getGeneratedClass(className)
@@ -78,9 +79,10 @@ class JvmBoxRunner(
         }
     }
 
-    private fun createClassLoader(classFileFactory: ClassFileFactory): GeneratedClassLoader {
-        val classLoader = ForTestCompileRuntime.runtimeJarClassLoader()
-        // TODO: configure paths
+    private fun createClassLoader(module: TestModule, classFileFactory: ClassFileFactory): GeneratedClassLoader {
+        val configuration = testServices.kotlinCoreEnvironmentProvider.getKotlinCoreEnvironment(module).configuration
+        val urls = configuration.jvmClasspathRoots.map { it.toURI().toURL() }
+        val classLoader = URLClassLoader(urls.toTypedArray())
         return GeneratedClassLoader(classFileFactory, classLoader)
     }
 

@@ -13,12 +13,16 @@ import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.model.TestModuleStructure
 import org.jetbrains.kotlin.test.model.moduleStructure
+import org.jetbrains.kotlin.test.services.ServiceRegistrationData
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.defaultDirectives
 
 abstract class EnvironmentConfigurator(protected val testServices: TestServices) {
     open val directivesContainer: DirectivesContainer
         get() = DirectivesContainer.Empty
+
+    open val additionalServices: List<ServiceRegistrationData>
+        get() = emptyList()
 
     protected val moduleStructure: TestModuleStructure
         get() = testServices.moduleStructure

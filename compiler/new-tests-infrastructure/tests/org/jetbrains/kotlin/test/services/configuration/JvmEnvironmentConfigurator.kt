@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.test.services.configuration
 import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoot
+import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
@@ -21,15 +22,19 @@ import org.jetbrains.kotlin.test.directives.RegisteredDirectives
 import org.jetbrains.kotlin.test.directives.SimpleDirectivesContainer
 import org.jetbrains.kotlin.test.directives.joinToArrayString
 import org.jetbrains.kotlin.test.model.BackendKind
+import org.jetbrains.kotlin.test.model.DependencyKind
 import org.jetbrains.kotlin.test.model.TestModule
-import org.jetbrains.kotlin.test.services.TestServices
-import org.jetbrains.kotlin.test.services.javaFiles
-import org.jetbrains.kotlin.test.services.sourceFileProvider
+import org.jetbrains.kotlin.test.services.*
+import org.jetbrains.kotlin.test.services.jvm.CompiledJarManager
+import org.jetbrains.kotlin.test.services.jvm.compiledJarManager
 import java.io.File
 
 class JvmEnvironmentConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
     override val directivesContainer: DirectivesContainer
         get() = JvmEnvironmentConfigurationDirectives
+
+    override val additionalServices: List<ServiceRegistrationData>
+        get() = listOf(service(::CompiledJarManager))
 
     override fun configureCompilerConfiguration(configuration: CompilerConfiguration, module: TestModule) {
         if (module.targetPlatform !in JvmPlatforms.allJvmPlatforms) return
@@ -89,6 +94,8 @@ class JvmEnvironmentConfigurator(testServices: TestServices) : EnvironmentConfig
             val files = javaFiles.map { testServices.sourceFileProvider.getRealFileForSourceFile(it) }
             configuration.addJavaSourceRoots(files)
         }
+
+        configuration.registerModuleDependencies(module)
     }
 
     private fun extractJdkKind(registeredDirectives: RegisteredDirectives): TestJdkKind {
@@ -125,6 +132,18 @@ class JvmEnvironmentConfigurator(testServices: TestServices) : EnvironmentConfig
             noRuntime -> ConfigurationKind.JDK_NO_RUNTIME
             else -> ConfigurationKind.JDK_ONLY
         }
+    }
+
+    private fun CompilerConfiguration.registerModuleDependencies(module: TestModule) {
+        val dependencyProvider = testServices.dependencyProvider
+        val modulesFromDependencies = module.dependencies
+            .filter { it.kind == DependencyKind.Binary }
+            .map { dependencyProvider.getTestModule(it.moduleName) }
+            .takeIf { it.isNotEmpty() }
+            ?: return
+        val jarManager = testServices.compiledJarManager
+        val dependenciesClassPath = modulesFromDependencies.map { jarManager.getCompiledJarForModule(it) }
+        addJvmClasspathRoots(dependenciesClassPath)
     }
 }
 
