@@ -118,7 +118,7 @@ class TestConfigurationImpl(
 
     override fun <R : ResultingArtifact.Source<R>> getFrontendFacade(frontendKind: FrontendKind<R>): FrontendFacade<R> {
         @Suppress("UNCHECKED_CAST")
-        return frontendFacades.getValue(frontendKind) as FrontendFacade<R>
+        return frontendFacades[frontendKind] as FrontendFacade<R>? ?: facadeNotFoundError("Source", frontendKind)
     }
 
     override fun <R : ResultingArtifact.Source<R>, I : ResultingArtifact.BackendInputInfo<I>> getConverter(
@@ -126,7 +126,8 @@ class TestConfigurationImpl(
         backendKind: BackendKind<I>
     ): Frontend2BackendConverter<R, I> {
         @Suppress("UNCHECKED_CAST")
-        return frontend2BackendConverters.getValue(frontendKind).getValue(backendKind) as Frontend2BackendConverter<R, I>
+        return frontend2BackendConverters[frontendKind]?.get(backendKind) as Frontend2BackendConverter<R, I>?
+            ?: facadeNotFoundError(frontendKind, backendKind)
     }
 
     override fun <I : ResultingArtifact.BackendInputInfo<I>, A : ResultingArtifact.Binary<A>> getBackendFacade(
@@ -134,7 +135,11 @@ class TestConfigurationImpl(
         artifactKind: ArtifactKind<A>
     ): BackendFacade<I, A> {
         @Suppress("UNCHECKED_CAST")
-        return backendFacades.getValue(backendKind).getValue(artifactKind) as BackendFacade<I, A>
+        return backendFacades[backendKind]?.get(artifactKind) as BackendFacade<I, A>? ?: facadeNotFoundError(backendKind, artifactKind)
+    }
+
+    private fun facadeNotFoundError(from: Any, to: Any): Nothing {
+        error("Facade for converting '$from' to '$to' not found")
     }
 
     override fun <R : ResultingArtifact.Source<R>> getFrontendHandlers(frontendKind: FrontendKind<R>): List<FrontendResultsHandler<R>> {
