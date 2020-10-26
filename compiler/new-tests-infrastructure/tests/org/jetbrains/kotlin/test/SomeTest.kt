@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontend2ClassicBackend
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontend2IrConverter
 import org.jetbrains.kotlin.test.frontend.classic.ClassicFrontendFacade
 import org.jetbrains.kotlin.test.frontend.classic.handlers.DeclarationsDumpHandler
+import org.jetbrains.kotlin.test.frontend.fir.Fir2IrResultsConverter
 import org.jetbrains.kotlin.test.frontend.fir.FirFrontendFacade
 import org.jetbrains.kotlin.test.frontend.fir.handlers.FirDumpHandler
 import org.jetbrains.kotlin.test.model.BackendKind
@@ -113,5 +114,48 @@ class SomeTest {
     @TestMetadata("multiModuleBox.kt")
     fun testBBMultiModuleBox() {
         testRunner(blackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/multiModuleBox.kt")
+    }
+
+    private val firBlackBoxRunnerConfiguration: TestConfigurationBuilder.() -> Unit = {
+        globalDefaults {
+            frontend = FrontendKind.FIR
+            backend = BackendKind.IrBackend
+            targetPlatform = JvmPlatforms.defaultJvmPlatform
+            dependencyKind = DependencyKind.Binary
+        }
+
+        assertions = JUnit5Assertions
+
+        useConfigurators(::JvmEnvironmentConfigurator)
+
+        useFrontendFacades(::FirFrontendFacade)
+        useFrontendHandlers(::FirDumpHandler)
+        useFrontend2BackendConverters(::Fir2IrResultsConverter)
+        useBackendFacades(::JvmIrBackendFacade)
+        useArtifactsHandlers(::JvmBoxRunner)
+    }
+
+    @Test
+    @TestMetadata("boxTest.kt")
+    fun testFirBBBoxTest() {
+        testRunner(firBlackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/boxTest.kt")
+    }
+
+    @Test
+    @TestMetadata("boxWithRuntimeTest.kt")
+    fun testFirBBBoxWithRuntimeTest() {
+        testRunner(firBlackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/boxWithRuntimeTest.kt")
+    }
+
+    @Test
+    @TestMetadata("boxWithJdkTest.kt")
+    fun testFirBBBoxWithJdkTest() {
+        testRunner(firBlackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/boxWithJdkTest.kt")
+    }
+
+    @Test
+    @TestMetadata("multiModuleBox.kt")
+    fun testFirBBMultiModuleBox() {
+        testRunner(firBlackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/multiModuleBox.kt")
     }
 }
