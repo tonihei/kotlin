@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.ir.descriptors.IrBuiltIns
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrConstructorCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetFieldImpl
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.types.*
@@ -348,3 +349,19 @@ val IrDeclaration.isStaticInlineClassReplacement: Boolean
 fun IrDeclaration.isFromJava(): Boolean =
     origin == IrDeclarationOrigin.IR_EXTERNAL_JAVA_DECLARATION_STUB ||
             parent is IrDeclaration && (parent as IrDeclaration).isFromJava()
+
+fun IrClassSymbol.rawType(context: JvmBackendContext): IrSimpleType {
+    // On the IR backend we represent raw types as star projected types with a special synthetic annotation.
+    // See `TypeTranslator.translateTypeAnnotations`.
+    val rawTypeAnnotation = IrConstructorCallImpl.fromSymbolOwner(
+        context.ir.symbols.rawTypeAnnotationClass.owner.defaultType,
+        context.ir.symbols.rawTypeAnnotationConstructor
+    )
+
+    return IrSimpleTypeImpl(
+        this,
+        hasQuestionMark = false,
+        arguments = owner.typeParameters.map { IrStarProjectionImpl },
+        annotations = listOf(rawTypeAnnotation)
+    )
+}
