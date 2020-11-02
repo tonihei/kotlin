@@ -14,13 +14,18 @@ import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
+import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.backend.jvm.jvmTypeMapper
 import org.jetbrains.kotlin.fir.declarations.*
+import org.jetbrains.kotlin.fir.isByte
+import org.jetbrains.kotlin.fir.isInt
+import org.jetbrains.kotlin.fir.isPrimitiveNumberOrUnsignedNumberType
 import org.jetbrains.kotlin.fir.resolve.calls.isUnit
+import org.jetbrains.kotlin.fir.symbols.StandardClassIds
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.impl.ConeClassLikeTypeImpl
 import org.jetbrains.kotlin.fir.types.impl.ConeTypeParameterTypeImpl
@@ -43,13 +48,13 @@ internal fun <L : Any> L.invalidAccess(): Nothing =
 private fun PsiElement.nonExistentType() = JavaPsiFacade.getElementFactory(project)
     .createTypeFromText("error.NonExistentClass", this)
 
-internal fun KtTypedSymbol.asPsiType(parent: PsiElement, phase: FirResolvePhase = FirResolvePhase.IMPLICIT_TYPES_BODY_RESOLVE): PsiType =
-    type.asPsiType(this, parent)
+internal fun KtTypedSymbol.asPsiType(parent: PsiElement, phase: FirResolvePhase): PsiType =
+    type.asPsiType(this, parent, phase)
 
 internal fun KtType.asPsiType(
     context: KtSymbol,
     parent: PsiElement,
-    phase: FirResolvePhase = FirResolvePhase.IMPLICIT_TYPES_BODY_RESOLVE
+    phase: FirResolvePhase
 ): PsiType {
     if (isUnit) return PsiType.VOID
     require(this is KtFirType)
@@ -132,13 +137,48 @@ internal val KtType.nullabilityType: NullabilityType
             if (it.nullability == KtTypeNullability.NULLABLE) NullabilityType.Nullable else NullabilityType.NotNull
         } ?: NullabilityType.Unknown
 
+
+internal fun KtAnnotatedSymbol.hasJvmSyntheticAnnotation(): Boolean =
+    hasAnnotation("kotlin/jvm/JvmSynthetic", null)
+
+internal fun KtAnnotatedSymbol.getJvmNameFromAnnotation(annotationUseSiteTarget: AnnotationUseSiteTarget? = null): String? {
+    val annotation = annotations.firstOrNull {
+        val siteTarget = it.useSiteTarget
+        (siteTarget == null || siteTarget == annotationUseSiteTarget) && it.classId?.asString() == "kotlin/jvm/JvmName"
+    }
+
+    return annotation?.let {
+        it.arguments.firstOrNull()?.expression as? String
+    }
+}
+
+internal fun KtAnnotatedSymbol.hasJvmFieldAnnotation(): Boolean =
+    hasAnnotation("kotlin/jvm/JvmField", null)
+
+internal fun KtAnnotatedSymbol.hasJvmOverloadsAnnotation(): Boolean =
+    hasAnnotation("kotlin/jvm/JvmOverloads", null)
+
+internal fun KtAnnotatedSymbol.hasJvmStaticAnnotation(): Boolean =
+    hasAnnotation("kotlin/jvm/JvmStatic", null)
+
+internal fun KtAnnotatedSymbol.hasInlineOnlyAnnotation(): Boolean =
+    hasAnnotation("kotlin/internal/InlineOnly", null)
+
+internal fun KtAnnotatedSymbol.hasAnnotation(classIdString: String, annotationUseSiteTarget: AnnotationUseSiteTarget?): Boolean =
+    annotations.any {
+        val siteTarget = it.useSiteTarget
+        (siteTarget == null || siteTarget == annotationUseSiteTarget) && it.classId?.asString() == classIdString
+    }
+
+
 internal fun KtAnnotatedSymbol.computeAnnotations(
     parent: PsiElement,
-    nullability: NullabilityType = NullabilityType.Unknown,
-    annotationUseSiteTarget: AnnotationUseSiteTarget? = null
+    nullability: NullabilityType,
+    annotationUseSiteTarget: AnnotationUseSiteTarget?
 ): List<PsiAnnotation> {
 
     if (nullability == NullabilityType.Unknown && annotations.isEmpty()) return emptyList()
+
     val nullabilityAnnotation = when (nullability) {
         NullabilityType.NotNull -> NotNull::class.java
         NullabilityType.Nullable -> Nullable::class.java
@@ -153,8 +193,11 @@ internal fun KtAnnotatedSymbol.computeAnnotations(
 
     val result = mutableListOf<PsiAnnotation>()
     for (annotation in annotations) {
-        if (annotationUseSiteTarget != null && annotationUseSiteTarget != annotation.useSiteTarget) continue
-        result.add(FirLightAnnotationForAnnotationCall(annotation, parent))
+
+        val siteTarget = annotation.useSiteTarget
+        if (siteTarget == null || siteTarget == annotationUseSiteTarget) {
+            result.add(FirLightAnnotationForAnnotationCall(annotation, parent))
+        }
     }
 
     if (nullabilityAnnotation != null) {
@@ -204,6 +247,7 @@ internal fun KtSymbolWithModality<KtCommonSymbolModality>.computeModalityForMeth
     computeSimpleModality()?.run {
         modality.add(this)
     }
+
     if (this is KtFunctionSymbol && isExternal) {
         modality.add(PsiModifier.NATIVE)
     }
@@ -241,12 +285,6 @@ internal val FirTypeRef?.nullabilityForJava: ConeNullability
 internal val ConeKotlinType.isConstKind
     get() = (this as? ConeClassLikeType)?.toConstKind() != null
 
-internal fun KtAnnotatedSymbol.hasAnnotation(fqName: String, site: AnnotationUseSiteTarget? = null): Boolean =
-    annotations.any {
-        (site == null || it.useSiteTarget == site) &&
-                it.classId?.asSingleFqName()?.asString() == fqName
-    }
-
 internal val FirTypeRef.coneTypeSafe: ConeKotlinType? get() = coneTypeSafe()
 
 internal fun basicIsEquivalentTo(`this`: PsiElement?, that: PsiElement?): Boolean {
@@ -262,4 +300,40 @@ internal fun basicIsEquivalentTo(`this`: PsiElement?, that: PsiElement?): Boolea
 
     val thatMemberOrigin = (that as? KtLightMember<*>)?.lightMemberOrigin ?: return false
     return thisMemberOrigin.isEquivalentTo(thatMemberOrigin)
+}
+
+internal fun KtType.getTypeNullability(context: KtSymbol, phase: FirResolvePhase): NullabilityType {
+
+    if (nullabilityType != NullabilityType.NotNull) return nullabilityType
+
+    if (isUnit) return NullabilityType.NotNull
+
+    require(this is KtFirType)
+    require(context is KtFirSymbol<*>)
+
+    val coneType = coneType as? ConeClassLikeType ?: return NullabilityType.NotNull
+
+    //TODO Move to Primitives.kt
+    fun ConeClassLikeType.isBoolean(): Boolean = lookupTag.classId == StandardClassIds.Boolean
+    fun ConeClassLikeType.isChar(): Boolean = lookupTag.classId == StandardClassIds.Char
+
+    if (!coneType.isPrimitiveNumberOrUnsignedNumberType() &&
+        !coneType.isChar() && !coneType.isBoolean()
+    ) {
+        return nullabilityType
+    }
+
+    if (coneType is ConeClassErrorType) return NullabilityType.NotNull
+    if (coneType.typeArguments.any { it is ConeClassErrorType }) return NullabilityType.NotNull
+    if (coneType.classId?.shortClassName?.asString() == SpecialNames.ANONYMOUS) return NullabilityType.NotNull
+
+    val canonicalSignature = context.firRef.withFir(phase) {
+        it.session.jvmTypeMapper.mapType(coneType, TypeMappingMode.DEFAULT).descriptor
+    }
+
+    if (canonicalSignature == "[L<error>;") return NullabilityType.NotNull
+
+    val isNotPrimitiveType = canonicalSignature.startsWith("L") || canonicalSignature.startsWith("[")
+
+    return if (isNotPrimitiveType) NullabilityType.NotNull else NullabilityType.Unknown
 }

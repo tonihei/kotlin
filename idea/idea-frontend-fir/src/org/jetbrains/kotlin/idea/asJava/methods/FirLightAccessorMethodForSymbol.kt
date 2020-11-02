@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.asJava.classes.METHOD_INDEX_FOR_GETTER
 import org.jetbrains.kotlin.asJava.classes.METHOD_INDEX_FOR_SETTER
 import org.jetbrains.kotlin.asJava.classes.lazyPub
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
+import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtPropertyAccessorSymbol
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtPropertyGetterSymbol
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtPropertySetterSymbol
@@ -55,7 +56,11 @@ internal class FirLightAccessorMethodForSymbol(
         val accessorSite =
             if (propertyAccessorSymbol is KtPropertyGetterSymbol) AnnotationUseSiteTarget.PROPERTY_GETTER
             else AnnotationUseSiteTarget.PROPERTY_SETTER
-        firContainingProperty.computeAnnotations(this, NullabilityType.Unknown, accessorSite)
+        firContainingProperty.computeAnnotations(
+            parent = this,
+            nullability = NullabilityType.Unknown,
+            annotationUseSiteTarget = accessorSite,
+        )
     }
 
     private val _modifiers: Set<String> by lazyPub {
@@ -81,7 +86,7 @@ internal class FirLightAccessorMethodForSymbol(
 
     private val _returnedType: PsiType? by lazyPub {
         if (propertyAccessorSymbol is KtPropertySetterSymbol) return@lazyPub PsiType.VOID
-        return@lazyPub propertyAccessorSymbol.asPsiType(this@FirLightAccessorMethodForSymbol)
+        return@lazyPub propertyAccessorSymbol.asPsiType(this@FirLightAccessorMethodForSymbol, FirResolvePhase.IMPLICIT_TYPES_BODY_RESOLVE)
     }
 
     override fun getReturnType(): PsiType? = _returnedType

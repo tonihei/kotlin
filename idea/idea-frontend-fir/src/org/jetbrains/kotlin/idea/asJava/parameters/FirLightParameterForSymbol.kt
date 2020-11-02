@@ -28,7 +28,11 @@ internal class FirLightParameterForSymbol(
     override val kotlinOrigin: KtParameter? = parameterSymbol.psi as? KtParameter
 
     private val _annotations: List<PsiAnnotation> by lazyPub {
-        parameterSymbol.computeAnnotations(this, parameterSymbol.type.nullabilityType)
+        parameterSymbol.computeAnnotations(
+            parent = this,
+            nullability = parameterSymbol.type.getTypeNullability(parameterSymbol, FirResolvePhase.TYPES),
+            annotationUseSiteTarget = null,
+        )
     }
 
     override fun getModifierList(): PsiModifierList = _modifierList

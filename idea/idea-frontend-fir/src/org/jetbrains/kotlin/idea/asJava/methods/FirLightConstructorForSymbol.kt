@@ -10,6 +10,7 @@ import com.intellij.psi.PsiModifierList
 import com.intellij.psi.PsiType
 import org.jetbrains.kotlin.asJava.builder.LightMemberOrigin
 import org.jetbrains.kotlin.asJava.classes.lazyPub
+import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtConstructorSymbol
 
 internal class FirLightConstructorForSymbol(
@@ -26,7 +27,11 @@ internal class FirLightConstructorForSymbol(
     override fun isConstructor(): Boolean = true
 
     private val _annotations: List<PsiAnnotation> by lazyPub {
-        constructorSymbol.computeAnnotations(this, NullabilityType.Unknown)
+        constructorSymbol.computeAnnotations(
+            parent = this,
+            nullability = NullabilityType.Unknown,
+            annotationUseSiteTarget = null,
+        )
     }
 
     private val _modifiers: Set<String> by lazyPub {

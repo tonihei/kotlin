@@ -60,7 +60,11 @@ internal class FirLightParameterForReceiver private constructor(
     override val kotlinOrigin: KtParameter? = null
 
     private val _annotations: List<PsiAnnotation> by lazyPub {
-        annotatedSymbol.computeAnnotations(this, type.nullabilityType, AnnotationUseSiteTarget.RECEIVER)
+        annotatedSymbol.computeAnnotations(
+            parent = this,
+            nullability = type.getTypeNullability(annotatedSymbol, FirResolvePhase.TYPES),
+            annotationUseSiteTarget = AnnotationUseSiteTarget.RECEIVER,
+        )
     }
 
     override fun getModifierList(): PsiModifierList = _modifierList

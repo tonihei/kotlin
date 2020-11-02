@@ -154,7 +154,7 @@ abstract class FirLightClassBase protected constructor(manager: PsiManager) : Li
         var methodIndex = METHOD_INDEX_BASE
         for (declaration in declarations) {
 
-            if (declaration is KtAnnotatedSymbol && declaration.hasAnnotation("kotlin.jvm.JvmSynthetic")) continue
+            if (declaration is KtAnnotatedSymbol && declaration.hasJvmSyntheticAnnotation(annotationUseSiteTarget = null)) continue
 
             when (declaration) {
                 is KtFunctionSymbol -> {
@@ -168,7 +168,7 @@ abstract class FirLightClassBase protected constructor(manager: PsiManager) : Li
                         )
                     )
 
-                    if (declaration.hasAnnotation("kotlin.jvm.JvmOverloads")) {
+                    if (declaration.hasJvmOverloadsAnnotation()) {
                         val skipMask = BitSet(declaration.valueParameters.size)
 
                         for (i in declaration.valueParameters.size - 1 downTo 0) {
@@ -202,10 +202,10 @@ abstract class FirLightClassBase protected constructor(manager: PsiManager) : Li
                 }
                 is KtPropertySymbol -> {
 
-                    if (declaration.hasAnnotation("kotlin.jvm.JvmField")) continue
+                    if (declaration.hasJvmFieldAnnotation()) continue
 
                     val getter = declaration.getter?.takeIf {
-                        !declaration.hasAnnotation("kotlin.jvm.JvmSynthetic", AnnotationUseSiteTarget.PROPERTY_GETTER)
+                        !declaration.hasJvmSyntheticAnnotation(AnnotationUseSiteTarget.PROPERTY_GETTER)
                     }
 
                     if (getter != null) {
@@ -221,7 +221,7 @@ abstract class FirLightClassBase protected constructor(manager: PsiManager) : Li
                     }
 
                     val setter = declaration.setter?.takeIf {
-                        !declaration.hasAnnotation("kotlin.jvm.JvmSynthetic", AnnotationUseSiteTarget.PROPERTY_SETTER)
+                        !declaration.hasJvmSyntheticAnnotation(AnnotationUseSiteTarget.PROPERTY_SETTER)
                     }
 
                     if (setter != null) {
@@ -246,7 +246,7 @@ abstract class FirLightClassBase protected constructor(manager: PsiManager) : Li
             if (declaration !is KtPropertySymbol) continue
 
             if (!declaration.hasBackingField) continue
-            if (declaration.hasAnnotation("kotlin.jvm.JvmSynthetic")) continue
+            if (declaration.hasJvmSyntheticAnnotation(AnnotationUseSiteTarget.FIELD)) continue
             result.add(
                 FirLightFieldForPropertySymbol(
                     propertySymbol = declaration,

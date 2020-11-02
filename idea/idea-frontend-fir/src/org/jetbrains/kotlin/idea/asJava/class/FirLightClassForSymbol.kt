@@ -10,6 +10,7 @@ import com.intellij.psi.*
 import com.intellij.psi.impl.InheritanceImplUtil
 import com.intellij.psi.impl.PsiClassImplUtil
 import com.intellij.psi.impl.PsiSuperMethodImplUtil
+import com.intellij.psi.impl.light.LightMethodBuilder
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
@@ -27,6 +28,7 @@ import org.jetbrains.kotlin.idea.frontend.api.analyze
 import org.jetbrains.kotlin.idea.frontend.api.fir.analyzeWithSymbolAsContext
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtClassKind
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtClassOrObjectSymbol
+import org.jetbrains.kotlin.idea.frontend.api.symbols.KtConstructorSymbol
 import org.jetbrains.kotlin.idea.frontend.api.symbols.KtFunctionSymbol
 import org.jetbrains.kotlin.idea.frontend.api.symbols.markers.KtSymbolKind
 import org.jetbrains.kotlin.idea.frontend.api.symbols.markers.KtSymbolVisibility
@@ -60,7 +62,11 @@ class FirLightClassForSymbol(
             modifiers.add(PsiModifier.STATIC)
         }
 
-        val annotations = classOrObjectSymbol.computeAnnotations(this@FirLightClassForSymbol)
+        val annotations = classOrObjectSymbol.computeAnnotations(
+            parent = this@FirLightClassForSymbol,
+            nullability = NullabilityType.Unknown,
+            annotationUseSiteTarget = null,
+        )
 
         FirLightClassModifierList(this@FirLightClassForSymbol, modifiers, annotations)
     }
@@ -83,8 +89,8 @@ class FirLightClassForSymbol(
         // we can't prohibit creating light classes with null names either since they can contain members
 
         analyzeWithSymbolAsContext(classOrObjectSymbol) {
-            classOrObjectSymbol.getDeclaredMemberScope().getAllSymbols().filterIsInstance<KtClassOrObjectSymbol>().map {
-                result.add(FirLightClassForSymbol(it, manager))
+            classOrObjectSymbol.getDeclaredMemberScope().getAllSymbols().filterIsInstance<KtClassOrObjectSymbol>().mapTo(result) {
+                FirLightClassForSymbol(it, manager)
             }
         }
 
@@ -146,18 +152,32 @@ class FirLightClassForSymbol(
 
     private val _ownMethods: List<KtLightMethod> by lazyPub {
 
-        analyzeWithSymbolAsContext(classOrObjectSymbol) {
+        val result = mutableListOf<KtLightMethod>()
 
+        analyzeWithSymbolAsContext(classOrObjectSymbol) {
             //TODO filterNot { it.isHiddenByDeprecation(support) }
             val callableSymbols = classOrObjectSymbol.getDeclaredMemberScope().getCallableSymbols()
             val visibleDeclarations = callableSymbols.filterNot {
                 isInterface && it is KtFunctionSymbol && it.visibility == KtSymbolVisibility.PRIVATE
             }
 
-            mutableListOf<KtLightMethod>().also {
-                createMethods(visibleDeclarations, isTopLevel = false, it)
+            createMethods(visibleDeclarations, isTopLevel = false, result)
+        }
+
+        if (result.none { it.isConstructor }) {
+            classOrObjectSymbol.primaryConstructor?.let {
+                result.add(
+                    FirLightConstructorForSymbol(
+                        constructorSymbol = it,
+                        lightMemberOrigin = null,
+                        containingClass = this,
+                        methodIndex = METHOD_INDEX_FOR_DEFAULT_CTOR
+                    )
+                )
             }
         }
+
+        result
     }
 
     private val _ownFields: List<KtLightField> by lazyPub {
