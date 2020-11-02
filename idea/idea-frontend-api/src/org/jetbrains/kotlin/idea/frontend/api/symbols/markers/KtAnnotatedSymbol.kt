@@ -14,7 +14,11 @@ abstract class KtAnnotationCall {
     abstract val classId: ClassId?
     abstract val useSiteTarget: AnnotationUseSiteTarget?
     abstract val psi: KtCallElement?
+    abstract val arguments: List<KtAnnotationCallArgument>
 }
+
+open class KtAnnotationCallArgument(val expression: Any?)
+class KtNamedAnnotationCallArgument(val name: String, expression: Any?) : KtAnnotationCallArgument(expression)
 
 interface KtAnnotatedSymbol : KtSymbol {
     val annotations: List<KtAnnotationCall>
