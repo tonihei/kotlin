@@ -16,7 +16,7 @@ internal fun getClasspathChanges(
     lastBuildInfo: BuildInfo,
     modulesApiHistory: ModulesApiHistory,
     reporter: ICReporter?,
-    withBuildHistory: Boolean = false
+    withBuildHistory: Boolean
 ): ChangesEither {
     reporter?.report { "Run with build history: $withBuildHistory" }
 

@@ -68,7 +68,7 @@ inline fun <R> withJsIC(fn: () -> R): R {
 }
 
 class IncrementalJsCompilerRunner(
-    private val workingDir: File,
+    workingDir: File,
     reporter: ICReporter,
     buildHistoryFile: File,
     private val modulesApiHistory: ModulesApiHistory,
@@ -84,7 +84,7 @@ class IncrementalJsCompilerRunner(
 
     override fun createCacheManager(args: K2JSCompilerArguments, projectDir: File?): IncrementalJsCachesManager {
         val serializerProtocol = if (!args.isIrBackendEnabled()) JsSerializerProtocol else KlibMetadataSerializerProtocol
-        return IncrementalJsCachesManager(cacheDirectory, workingDir, reporter, serializerProtocol)
+        return IncrementalJsCachesManager(cacheDirectory, projectDir, reporter, serializerProtocol)
     }
 
     override fun destinationDir(args: K2JSCompilerArguments): File =
@@ -103,9 +103,7 @@ class IncrementalJsCompilerRunner(
         initDirtyFiles(dirtyFiles, changedFiles)
 
         val libs = (args.libraries ?: "").split(File.pathSeparator).map { File(it) }
-        val classpathChanges = getClasspathChanges(libs, changedFiles, lastBuildInfo, modulesApiHistory, reporter,
-                                                   (System.getProperty(compileWithBuildCacheProperty) ?: false) as Boolean
-        )
+        val classpathChanges = getClasspathChanges(libs, changedFiles, lastBuildInfo, modulesApiHistory, reporter, withBuildHistory)
 
         @Suppress("UNUSED_VARIABLE") // for sealed when
         val unused = when (classpathChanges) {

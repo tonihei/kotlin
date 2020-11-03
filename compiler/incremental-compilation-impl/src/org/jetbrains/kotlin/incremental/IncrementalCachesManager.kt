@@ -77,7 +77,7 @@ class IncrementalJvmCachesManager(
 
 class IncrementalJsCachesManager(
     cachesRootDir: File,
-    rootProjectDir: File,
+    rootProjectDir: File?,
     reporter: ICReporter,
     serializerProtocol: SerializerExtensionProtocol
 ) : IncrementalCachesManager<IncrementalJsCache>(cachesRootDir, rootProjectDir, reporter) {

@@ -120,7 +120,6 @@ class IncrementalJvmCompilerRunner(
     override fun isICEnabled(): Boolean =
         IncrementalCompilation.isEnabledForJvm()
 
-    //TODO
     override fun createCacheManager(args: K2JVMCompilerArguments, projectDir: File?): IncrementalJvmCachesManager =
         IncrementalJvmCachesManager(cacheDirectory, projectDir, File(args.destination), reporter)
 
@@ -180,7 +179,7 @@ class IncrementalJvmCompilerRunner(
         reporter.reportVerbose { "Last Kotlin Build info -- $lastBuildInfo" }
 
         val classpathChanges = getClasspathChanges(args.classpathAsList, changedFiles, lastBuildInfo, modulesApiHistory, reporter,
-                                                   (System.getProperty(compileWithBuildCacheProperty) ?: false) as Boolean)
+                                                   withBuildHistory)
 
         @Suppress("UNUSED_VARIABLE") // for sealed when
         val unused = when (classpathChanges) {

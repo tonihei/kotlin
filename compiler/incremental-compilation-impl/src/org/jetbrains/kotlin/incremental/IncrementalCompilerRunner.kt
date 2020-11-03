@@ -59,6 +59,8 @@ abstract class IncrementalCompilerRunner<
 
     //TODO temporal measure to ensure quick disable, should be deleted after successful release
     protected val compileWithBuildCacheProperty = "kotlin.compile.with.build.history"
+    protected val withBuildHistory : Boolean = (System.getProperty(compileWithBuildCacheProperty) ?: false) as Boolean
+
 
     fun compile(
         allSourceFiles: List<File>,
@@ -338,9 +340,6 @@ abstract class IncrementalCompilerRunner<
 
     open fun runWithNoDirtyKotlinSources(caches: CacheManager): Boolean = false
 
-    //TODO make true property
-    val buildHistoryFeature = true
-
     private fun processChangesAfterBuild(
         compilationMode: CompilationMode,
         currentBuildInfo: BuildInfo,
@@ -353,7 +352,7 @@ abstract class IncrementalCompilerRunner<
             BuildDifference(currentBuildInfo.startTS, false, emptyDirtyData)
         }
 
-        val prevDiffs = if (!buildHistoryFeature) {
+        val prevDiffs = if (withBuildHistory) {
             BuildDiffsStorage.readFromFile(buildHistoryFile, reporter)?.buildDiffs ?: emptyList()
         } else {
             emptyList()
