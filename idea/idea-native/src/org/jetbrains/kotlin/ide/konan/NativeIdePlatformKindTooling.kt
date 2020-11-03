@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.idea.framework.KotlinLibraryKind
 import org.jetbrains.kotlin.idea.highlighter.KotlinTestRunLineMarkerContributor.Companion.getTestStateIcon
 import org.jetbrains.kotlin.idea.isMainFunction
 import org.jetbrains.kotlin.idea.platform.IdePlatformKindTooling
+import org.jetbrains.kotlin.idea.platform.isKotlinTestDeclaration
 import org.jetbrains.kotlin.idea.util.module
 import org.jetbrains.kotlin.platform.impl.NativeIdePlatformKind
 import org.jetbrains.kotlin.psi.KtFunction
@@ -51,6 +52,8 @@ class NativeIdePlatformKindTooling : IdePlatformKindTooling() {
     override fun getLibraryVersionProvider(project: Project): (Library) -> String? = { null }
 
     override fun getTestIcon(declaration: KtNamedDeclaration, descriptor: DeclarationDescriptor): Icon? {
+        if (!descriptor.isKotlinTestDeclaration()) return null
+
         val moduleName = descriptor.module.stableName?.asString() ?: ""
         val targetName = moduleName.substringAfterLast(".").removeSuffix("Test>")
 

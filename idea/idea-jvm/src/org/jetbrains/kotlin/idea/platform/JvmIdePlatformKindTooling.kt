@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.idea.framework.JavaRuntimeDetectionUtil
 import org.jetbrains.kotlin.idea.framework.JavaRuntimeLibraryDescription
 import org.jetbrains.kotlin.idea.highlighter.KotlinTestRunLineMarkerContributor.Companion.getTestStateIcon
 import org.jetbrains.kotlin.idea.platform.IdePlatformKindTooling
+import org.jetbrains.kotlin.idea.platform.isKotlinTestDeclaration
 import org.jetbrains.kotlin.platform.impl.JvmIdePlatformKind
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFunction
@@ -53,6 +54,8 @@ class JvmIdePlatformKindTooling : IdePlatformKindTooling() {
     }
 
     override fun getTestIcon(declaration: KtNamedDeclaration, descriptor: DeclarationDescriptor): Icon? {
+        if (!descriptor.isKotlinTestDeclaration()) return null
+
         val (urls, framework) = when (declaration) {
             is KtClassOrObject -> {
                 val lightClass = declaration.toLightClass() ?: return null
@@ -82,7 +85,7 @@ class JvmIdePlatformKindTooling : IdePlatformKindTooling() {
         return if (framework != null)
             getTestStateIcon(urls, declaration.project, strict = false, framework.icon)
         else
-            getTestStateIcon(urls, declaration.project, strict = false)
+            getTestStateIcon(urls, declaration.project, strict = true)
     }
 
     override fun acceptsAsEntryPoint(function: KtFunction) = true
