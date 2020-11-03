@@ -197,7 +197,7 @@ class KotlinGradleModelBuilder : AbstractKotlinGradleModelBuilder() {
 
             val currentCompilerArgumentsForBucket =
                 compileTask.getCompilerArgumentsForBucket("getSerializedCompilerArgumentsForBucket")?.let {
-                    FlatCompilerArgumentsBucket(it[0].toTypedArray(), it[1].toTypedArray(), it[2].toTypedArray(), it[3].toTypedArray())
+                    FlatCompilerArgumentsBucket(it[0], it[1], it[2], it[3])
                 } ?: RawToFlatCompilerArgumentsBucketConverter().let {
                     val currentArguments = compileTask.getCompilerArguments("getSerializedCompilerArguments")
                         ?: compileTask.getCompilerArguments("getSerializedCompilerArgumentsIgnoreClasspathIssues")
@@ -210,14 +210,14 @@ class KotlinGradleModelBuilder : AbstractKotlinGradleModelBuilder() {
 
             val defaultCompilerArgumentsForBucket =
                 compileTask.getCompilerArgumentsForBucket("getDefaultSerializedCompilerArgumentsForBucket")?.let {
-                    FlatCompilerArgumentsBucket(it[0].toTypedArray(), it[1].toTypedArray(), it[2].toTypedArray(), it[3].toTypedArray())
+                    FlatCompilerArgumentsBucket(it[0], it[1], it[2], it[3])
                 } ?: RawToFlatCompilerArgumentsBucketConverter().convert(compileTask.getCompilerArguments("getDefaultSerializedCompilerArguments").orEmpty())
 
             val defaultCompilerArgumentsBucket =
                 FlatToCachedCompilerArgumentsBucketConverter(modelDetachableMapper).convert(defaultCompilerArgumentsForBucket)
             val dependencyClasspath = compileTask.getDependencyClasspath()
             val dependencyClasspathCacheIds =
-                dependencyClasspath.map { modelDetachableMapper.cacheArgument(it) }.toTypedArray()
+                dependencyClasspath.map { modelDetachableMapper.cacheArgument(it) }
             cachedArgumentsBySourceSet[sourceSetName] = CachedArgsInfoImpl(
                 currentCompilerArgumentsBucket,
                 defaultCompilerArgumentsBucket,
