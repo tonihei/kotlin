@@ -5,16 +5,28 @@
 
 package org.jetbrains.kotlin.test.frontend.classic
 
+import com.intellij.openapi.project.Project
+import org.jetbrains.kotlin.analyzer.AnalysisResult
+import org.jetbrains.kotlin.analyzer.common.CommonResolverForModuleFactory
+import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.NoScopeRecordCliBindingTrace
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
-import org.jetbrains.kotlin.config.JVMConfigurationKeys
-import org.jetbrains.kotlin.config.JvmTarget
-import org.jetbrains.kotlin.config.languageVersionSettings
-import org.jetbrains.kotlin.test.services.*
+import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl
+import org.jetbrains.kotlin.js.analyze.TopDownAnalyzerFacadeForJS
+import org.jetbrains.kotlin.js.config.JsConfig
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.platform.isCommon
+import org.jetbrains.kotlin.platform.js.isJs
+import org.jetbrains.kotlin.platform.jvm.isJvm
+import org.jetbrains.kotlin.platform.konan.isNative
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.serialization.deserialization.MetadataPartProvider
 import org.jetbrains.kotlin.test.model.DependencyKind
 import org.jetbrains.kotlin.test.model.FrontendFacade
 import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.model.TestModule
+import org.jetbrains.kotlin.test.services.*
 
 class ClassicFrontendFacade(
     testServices: TestServices
@@ -29,7 +41,7 @@ class ClassicFrontendFacade(
         val project = environment.project
 
         val ktFilesMap = testServices.sourceFileProvider.getKtFilesForSourceFiles(module.files, project)
-        val ktFiles = ktFilesMap.values
+        val ktFiles = ktFilesMap.values.toList()
         val languageVersionSettings = module.languageVersionSettings
 
         val dependentDescriptors = module.dependencies.filter { it.kind == DependencyKind.Source }.map {
@@ -37,18 +49,7 @@ class ClassicFrontendFacade(
             moduleDescriptorProvider.getModuleDescriptor(testModule)
         }
 
-        // TODO: add configuring JvmTarget
-        val analysisResult = TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-            project,
-            ktFiles,
-            NoScopeRecordCliBindingTrace(),
-            environment.configuration.copy().apply {
-                this.languageVersionSettings = languageVersionSettings
-                this.put(JVMConfigurationKeys.JVM_TARGET, JvmTarget.DEFAULT)
-            },
-            environment::createPackagePartProvider,
-            explictModuleDependencyList = dependentDescriptors
-        )
+        val analysisResult = performResolve(module, project, environment, ktFiles, languageVersionSettings, dependentDescriptors)
         moduleDescriptorProvider.replaceModuleDescriptorForModule(module, analysisResult.moduleDescriptor)
         return ClassicFrontendSourceArtifacts(
             ktFilesMap,
@@ -56,5 +57,79 @@ class ClassicFrontendFacade(
             project,
             languageVersionSettings
         )
+    }
+
+    private fun performResolve(
+        module: TestModule,
+        project: Project,
+        environment: KotlinCoreEnvironment,
+        files: List<KtFile>,
+        languageVersionSettings: LanguageVersionSettings,
+        dependentDescriptors: List<ModuleDescriptorImpl>
+    ): AnalysisResult {
+        val targetPlatform = module.targetPlatform
+        return when {
+            targetPlatform.isJvm() -> performJvmModuleResolve(project, environment, files, dependentDescriptors)
+            targetPlatform.isJs() -> performJsModuleResolve(project, environment, files, dependentDescriptors)
+            targetPlatform.isNative() -> TODO()
+            targetPlatform.isCommon() -> performCommonModuleResolve(module, files, languageVersionSettings)
+            else -> error("Should not be here")
+        }
+    }
+
+    private fun performJvmModuleResolve(
+        project: Project,
+        environment: KotlinCoreEnvironment,
+        files: List<KtFile>,
+        dependentDescriptors: List<ModuleDescriptorImpl>
+    ): AnalysisResult {
+        return TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+            project,
+            files,
+            NoScopeRecordCliBindingTrace(),
+            environment.configuration.copy(),
+            environment::createPackagePartProvider,
+            explictModuleDependencyList = dependentDescriptors
+        )
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun performJsModuleResolve(
+        project: Project,
+        environment: KotlinCoreEnvironment,
+        files: List<KtFile>,
+        dependentDescriptors: List<ModuleDescriptorImpl>
+    ): AnalysisResult {
+        val configuration = environment.configuration
+        val jsConfig = JsConfig(project, configuration)
+        val dependentDescriptorsIncludingLibraries = buildList {
+            addAll(dependentDescriptors)
+            addAll(jsConfig.moduleDescriptors)
+        }
+        return TopDownAnalyzerFacadeForJS.analyzeFiles(
+            files,
+            project,
+            configuration,
+            moduleDescriptors = dependentDescriptorsIncludingLibraries,
+            friendModuleDescriptors = emptyList()
+        )
+    }
+
+    private fun performCommonModuleResolve(
+        module: TestModule,
+        files: List<KtFile>,
+        languageVersionSettings: LanguageVersionSettings,
+    ): AnalysisResult {
+        return CommonResolverForModuleFactory.analyzeFiles(
+            files,
+            Name.special("<${module.name}>"),
+            dependOnBuiltIns = true,
+            languageVersionSettings,
+            module.targetPlatform,
+            // TODO: add dependency manager
+        ) { _ ->
+            // TODO
+            MetadataPartProvider.Empty
+        }
     }
 }

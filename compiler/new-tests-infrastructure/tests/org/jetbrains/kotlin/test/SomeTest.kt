@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.test
 
 import com.intellij.testFramework.TestDataPath
+import org.jetbrains.kotlin.platform.js.JsPlatforms
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.test.backend.classic.ClassicJvmBackendFacade
 import org.jetbrains.kotlin.test.backend.handlers.JvmBoxRunner
@@ -23,6 +24,7 @@ import org.jetbrains.kotlin.test.model.BackendKind
 import org.jetbrains.kotlin.test.model.DependencyKind
 import org.jetbrains.kotlin.test.model.FrontendKind
 import org.jetbrains.kotlin.test.services.JUnit5Assertions
+import org.jetbrains.kotlin.test.services.configuration.JsEnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.configuration.JvmEnvironmentConfigurator
 import org.junit.jupiter.api.Test
 
@@ -157,5 +159,26 @@ class SomeTest {
     @TestMetadata("multiModuleBox.kt")
     fun testFirBBMultiModuleBox() {
         testRunner(firBlackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/multiModuleBox.kt")
+    }
+
+    private val jsClassicBlackBoxRunnerConfiguration: TestConfigurationBuilder.() -> Unit = {
+        globalDefaults {
+            frontend = FrontendKind.ClassicFrontend
+            backend = BackendKind.NoBackend
+            targetPlatform = JsPlatforms.defaultJsPlatform
+            dependencyKind = DependencyKind.Binary
+        }
+
+        assertions = JUnit5Assertions
+
+        useConfigurators(::JsEnvironmentConfigurator)
+        useFrontendFacades(::ClassicFrontendFacade)
+        useFrontendHandlers(::DeclarationsDumpHandler)
+    }
+
+    @Test
+    @TestMetadata("jsTest.kt")
+    fun testJsBBjsTest() {
+        testRunner(jsClassicBlackBoxRunnerConfiguration).runTest("compiler/new-tests-infrastructure/testData/jsTest.kt")
     }
 }
