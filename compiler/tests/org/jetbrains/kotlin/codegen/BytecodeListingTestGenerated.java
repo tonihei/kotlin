@@ -907,6 +907,11 @@ public class BytecodeListingTestGenerated extends AbstractBytecodeListingTest {
             runTest("compiler/testData/codegen/bytecodeListing/inlineClasses/nullabilityInExpansion.kt");
         }
 
+        @TestMetadata("nullableAndNotNullPrimitive.kt")
+        public void testNullableAndNotNullPrimitive() throws Exception {
+            runTest("compiler/testData/codegen/bytecodeListing/inlineClasses/nullableAndNotNullPrimitive.kt");
+        }
+
         @TestMetadata("overridingGenericMethodWithInlineClassParameterType.kt")
         public void testOverridingGenericMethodWithInlineClassParameterType() throws Exception {
             runTest("compiler/testData/codegen/bytecodeListing/inlineClasses/overridingGenericMethodWithInlineClassParameterType.kt");
